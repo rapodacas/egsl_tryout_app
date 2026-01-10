@@ -926,6 +926,7 @@ function buildPlayersTable() {
 }
 
 /* CSV EXPORT */
+/* CSV EXPORT */
 function exportCSV() {
   if (!players || players.length === 0) return;
 
@@ -934,7 +935,8 @@ function exportCSV() {
     "swing","contact","power",
     "glove","arm","footwork",
     "speed","hustle","coachability",
-    "notes"
+    "notes",
+    "photo"   // NEW: include Base64 image
   ];
 
   const header = fields.join(",");
@@ -942,11 +944,18 @@ function exportCSV() {
     const player = p || {};
     return fields.map(field => {
       let value = player[field];
+
+      // Ensure empty fields are blank
       if (value === undefined || value === null) value = "";
+
+      // Escape quotes
       value = String(value).replace(/"/g, '""');
+
+      // Wrap in quotes if needed
       if (value.includes(",") || value.includes("\n") || value.includes("\"")) {
         value = `"${value}"`;
       }
+
       return value;
     }).join(",");
   });
@@ -956,8 +965,8 @@ function exportCSV() {
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
-  a.href = url;
   const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "team";
+  a.href = url;
   a.download = teamName + "_players.csv";
   document.body.appendChild(a);
   a.click();
@@ -1088,3 +1097,4 @@ function seedTeam(teamName) {
 </script>
 
 </body>
+

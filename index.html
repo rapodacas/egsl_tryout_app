@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Softball Tryout App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f2f2f7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Hidden by default, shown when active */
+  .hidden {
+    display: none;
+  }
+
+  /* Start Screen */
+  #teamSelectScreen {
+    padding: 20px 16px;
+  }
+
+  #teamSelectScreen h1 {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+  }
+
+  .team-list {
+    margin-top: 10px;
+    margin-bottom: 16px;
+  }
+
+  .team-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .team-item span {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .team-empty {
+    font-size: 0.9rem;
+    color: #777;
+    font-style: italic;
+  }
+
+  .team-actions {
+    margin-top: 10px;
+  }
+
+  .team-actions input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+
+  .team-actions button {
+    width: 100%;
+    padding: 8px;
+    border-radius: 10px;
+    border: none;
+    background: #007aff;
+    color: #fff;
+    font-size: 0.9rem;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .player-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .player-controls button {
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: none;
+    background: #007aff;
+    color: white;
+    font-size: 0.75rem;
+    margin-left: 4px;
+  }
+
+  /* Summary Bar */
+  .summary-bar-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .summary-progress-outer {
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: #e0e0e0;
+    overflow: hidden;
+  }
+
+  .summary-progress-inner {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: #34c759;
+    transition: width 0.2s ease-out;
+  }
+
+  .summary-text {
+    font-size: 0.8rem;
+    color: #555;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Card */
+  .card {
+    background: white;
+    margin: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+  }
+
+  .field {
+    margin-bottom: 10px;
+  }
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+  }
+
+  textarea {
+    min-height: 60px;
+  }
+
+  .section-title {
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #444;
+  }
+
+  /* Rating Grid */
+  .rating-group-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .rating-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .rating-label {
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .rating-circles {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  .circle.selected.level-1 { background: #ffffff; border-color: #a0a0a0; }
+  .circle.selected.level-2 { background: #d8f5d0; border-color: #9fd59b; }
+  .circle.selected.level-3 { background: #b0eea3; border-color: #7fd471; }
+  .circle.selected.level-4 { background: #6ddc73; border-color: #3aaa43; }
+  .circle.selected.level-5 { background: #2f8f3a; border-color: #1a6124; }
+
+  /* Swipe Container */
+  .swipe-container {
+    width: 100%;
+    touch-action: pan-y;
+  }
+
+  /* Player Info Grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* All Players View */
+  #allPlayersView {
+    display: none;
+    padding: 12px;
+  }
+
+  .players-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .players-table th,
+  .players-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .players-table tr {
+    cursor: pointer;
+  }
+
+  .players-table tr:hover {
+    background: #f0f0f0;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- TEAM SELECTION SCREEN -->
+<div id="teamSelectScreen">
+  <h1>Select or create a team</h1>
+  <div id="teamList" class="team-list"></div>
+
+  <div class="team-actions">
+    <input type="text" id="newTeamName" placeholder="New team name (e.g., 12U A)">
+    <button onclick="createTeam()">Create New Team</button>
+  </div>
+</div>
+
+<!-- MAIN APP (HIDDEN UNTIL TEAM SELECTED) -->
+<div id="mainApp" class="hidden">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-row">
+      <div class="player-name" id="playerNameDisplay">Player 1</div>
+      <div class="player-controls">
+        <button onclick="showTeamSelect()">Teams</button>
+        <button onclick="toggleAllPlayers()">All Players</button>
+        <button onclick="exportCSV()">Export CSV</button>
+        <button onclick="addPlayer()">+ Player</button>
+        <button onclick="deletePlayer()">Delete</button>
+      </div>
+    </div>
+
+    <div class="summary-bar-container">
+      <div class="summary-progress-outer">
+        <div class="summary-progress-inner" id="summaryProgress"></div>
+      </div>
+      <div class="summary-text">
+        <span id="summaryScore">Score: 0</span>
+        <span id="summaryAvg">Avg: 0.0</span>
+        <span id="summaryCompletion">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL PLAYERS VIEW -->
+  <div id="allPlayersView">
+    <h2>All Players</h2>
+    <table class="players-table" id="playersTable">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Avg</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- PLAYER CARD VIEW -->
+  <div class="swipe-container" id="swipeArea">
+    <div class="card" id="playerCard">
+
+      <h2>Softball Tryout Card</h2>
+
+      <!-- Player Info -->
+      <div class="info-grid">
+        <div class="field">
+          <label>Name</label>
+          <input type="text" data-field="name">
+        </div>
+
+        <div class="field">
+          <label>Throws/Bats</label>
+          <input type="text" data-field="throws" placeholder="R/R, R/L, L/L">
+        </div>
+      </div>
+
+      <!-- Ratings -->
+      <div class="section-title">Hitting</div>
+      <div class="rating-group-grid">
+        <div class="rating-item">
+          <div class="rating-label">Swing</div>
+          <div class="rating-circles" data-field="swing">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+
+        <div class="rating-item">
+          <div class="rating-label">Contact</div>
+          <div class="rating-circles" data-field="contact">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+
+        <div class="rating-item">
+          <div class="rating-label">Power</div>
+          <div class="rating-circles" data-field="power">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Fielding</div>
+      <div class="rating-group-grid">
+        <div class="rating-item">
+          <div class="rating-label">Glove</div>
+          <div class="rating-circles" data-field="glove">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+
+        <div class="rating-item">
+          <div class="rating-label">Arm</div>
+          <div class="rating-circles" data-field="arm">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+
+        <div class="rating-item">
+          <div class="rating-label">Footwork</div>
+          <div class="rating-circles" data-field="footwork">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Speed & Intangibles</div>
+      <div class="rating-group-grid">
+        <div class="rating-item">
+          <div class="rating-label">Speed</div>
+          <div class="rating-circles" data-field="speed">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+
+        <div class="rating-item">
+          <div class="rating-label">Hustle</div>
+          <div class="rating-circles" data-field="hustle">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+
+        <div class="rating-item">
+          <div class="rating-label">Coachability</div>
+          <div class="rating-circles" data-field="coachability">
+            <div class="circle level-1" data-level="1"></div>
+            <div class="circle level-2" data-level="2"></div>
+            <div class="circle level-3" data-level="3"></div>
+            <div class="circle level-4" data-level="4"></div>
+            <div class="circle level-5" data-level="5"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Notes</div>
+      <textarea data-field="notes" placeholder="Strengths, weaknesses, recommended positions..."></textarea>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* GLOBAL STATE */
+let currentTeamKey = null;
+let players = [];
+let current = 0;
+
+/* TEAM MANAGEMENT */
+
+function getTeamKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("team_")) {
+      keys.push(k);
+    }
+  }
+  return keys.sort();
+}
+
+function renderTeamList() {
+  const container = document.getElementById("teamList");
+  container.innerHTML = "";
+
+  const keys = getTeamKeys();
+  if (keys.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "team-empty";
+    empty.textContent = "No teams yet. Create one below.";
+    container.appendChild(empty);
+    return;
+  }
+
+  keys.forEach(key => {
+    const teamName = key.replace("team_", "");
+    const div = document.createElement("div");
+    div.className = "team-item";
+    const span = document.createElement("span");
+    span.textContent = teamName;
+
+    div.appendChild(span);
+    div.addEventListener("click", () => {
+      selectTeam(key);
+    });
+
+    container.appendChild(div);
+  });
+}
+
+function createTeam() {
+  const input = document.getElementById("newTeamName");
+  const name = input.value.trim();
+  if (!name) return;
+
+  const key = "team_" + name;
+  if (!localStorage.getItem(key)) {
+    localStorage.setItem(key, JSON.stringify([{}]));
+  }
+  input.value = "";
+  renderTeamList();
+}
+
+function selectTeam(key) {
+  currentTeamKey = key;
+  const data = localStorage.getItem(currentTeamKey);
+  players = data ? JSON.parse(data) : [{}];
+  if (!Array.isArray(players) || players.length === 0) {
+    players = [{}];
+  }
+  current = 0;
+
+  document.getElementById("teamSelectScreen").classList.add("hidden");
+  document.getElementById("mainApp").classList.remove("hidden");
+
+  loadPlayer();
+}
+
+function showTeamSelect() {
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("teamSelectScreen").classList.remove("hidden");
+  renderTeamList();
+}
+
+/* SAVE CURRENT TEAM */
+function save() {
+  if (!currentTeamKey) return;
+  localStorage.setItem(currentTeamKey, JSON.stringify(players));
+}
+
+/* SUMMARY BAR */
+function updateSummary() {
+  const p = players[current] || {};
+  const fields = [
+    "swing","contact","power",
+    "glove","arm","footwork",
+    "speed","hustle","coachability"
+  ];
+
+  let sum = 0, count = 0;
+  fields.forEach(f => {
+    if (p[f] >= 1 && p[f] <= 5) {
+      sum += p[f];
+      count++;
+    }
+  });
+
+  const avg = count ? sum / count : 0;
+  const completion = fields.length ? (count / fields.length) * 100 : 0;
+
+  document.getElementById("summaryScore").textContent = "Score: " + sum;
+  document.getElementById("summaryAvg").textContent = "Avg: " + avg.toFixed(1);
+  document.getElementById("summaryCompletion").textContent = Math.round(completion) + "%";
+  document.getElementById("summaryProgress").style.width = completion + "%";
+}
+
+/* LOAD PLAYER */
+function loadPlayer() {
+  const p = players[current] || {};
+  document.getElementById("playerNameDisplay").textContent = p.name || `Player ${current + 1}`;
+
+  document.querySelectorAll("[data-field]").forEach(el => {
+    const field = el.getAttribute("data-field");
+
+    if (el.classList.contains("rating-circles")) {
+      el.querySelectorAll(".circle").forEach(c => c.classList.remove("selected"));
+      if (p[field]) {
+        const match = el.querySelector(`.circle[data-level="${p[field]}"]`);
+        if (match) match.classList.add("selected");
+      }
+    } else {
+      el.value = p[field] || "";
+    }
+  });
+
+  updateSummary();
+}
+
+/* ADD PLAYER */
+function addPlayer() {
+  players.push({});
+  current = players.length - 1;
+  save();
+  loadPlayer();
+}
+
+/* DELETE PLAYER */
+function deletePlayer() {
+  if (players.length === 1) return;
+  players.splice(current, 1);
+  current = Math.max(0, current - 1);
+  save();
+  loadPlayer();
+}
+
+/* INPUT HANDLERS */
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (!el.matches("input[data-field], textarea[data-field]")) return;
+
+  const field = el.getAttribute("data-field");
+  if (!players[current]) players[current] = {};
+  players[current][field] = el.value;
+  save();
+  loadPlayer();
+});
+
+/* RATING HANDLERS */
+document.addEventListener("click", e => {
+  const circle = e.target.closest(".circle");
+  if (!circle) return;
+  const group = circle.closest(".rating-circles");
+  if (!group) return;
+
+  const field = group.getAttribute("data-field");
+  const level = parseInt(circle.getAttribute("data-level"), 10);
+
+  if (!players[current]) players[current] = {};
+  players[current][field] = level;
+  save();
+
+  group.querySelectorAll(".circle").forEach(c => c.classList.remove("selected"));
+  circle.classList.add("selected");
+  updateSummary();
+});
+
+/* SWIPE NAVIGATION */
+let startX = 0;
+const swipeArea = document.getElementById("swipeArea");
+
+swipeArea.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+swipeArea.addEventListener("touchend", e => {
+  const diff = e.changedTouches[0].clientX - startX;
+  if (Math.abs(diff) < 50) return;
+  if (diff < 0 && current < players.length - 1) current++;
+  else if (diff > 0 && current > 0) current--;
+  loadPlayer();
+});
+
+/* ALL PLAYERS VIEW */
+function toggleAllPlayers() {
+  const card = document.getElementById("playerCard");
+  const list = document.getElementById("allPlayersView");
+
+  if (list.style.display === "none" || list.style.display === "") {
+    buildPlayersTable();
+    list.style.display = "block";
+    card.style.display = "none";
+  } else {
+    list.style.display = "none";
+    card.style.display = "block";
+  }
+}
+
+function buildPlayersTable() {
+  const tbody = document.querySelector("#playersTable tbody");
+  tbody.innerHTML = "";
+
+  const fields = [
+    "swing","contact","power",
+    "glove","arm","footwork",
+    "speed","hustle","coachability"
+  ];
+
+  players.forEach((p, index) => {
+    const player = p || {};
+    let sum = 0, count = 0;
+
+    fields.forEach(f => {
+      if (player[f] >= 1 && player[f] <= 5) {
+        sum += player[f];
+        count++;
+      }
+    });
+
+    const avg = count ? (sum / count) : 0;
+    const completion = fields.length ? (count / fields.length) * 100 : 0;
+
+    const tr = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const avgCell = document.createElement("td");
+    const compCell = document.createElement("td");
+
+    nameCell.textContent = player.name || `Player ${index + 1}`;
+    avgCell.textContent = avg.toFixed(1);
+    compCell.textContent = Math.round(completion);
+
+    tr.appendChild(nameCell);
+    tr.appendChild(avgCell);
+    tr.appendChild(compCell);
+
+    tr.addEventListener("click", () => {
+      current = index;
+      document.getElementById("allPlayersView").style.display = "none";
+      document.getElementById("playerCard").style.display = "block";
+      loadPlayer();
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+/* CSV EXPORT */
+function exportCSV() {
+  if (!players || players.length === 0) return;
+
+  const fields = [
+    "name","throws",
+    "swing","contact","power",
+    "glove","arm","footwork",
+    "speed","hustle","coachability",
+    "notes"
+  ];
+
+  const header = fields.join(",");
+  const rows = players.map((p, index) => {
+    const player = p || {};
+    return fields.map(field => {
+      let value = player[field];
+      if (value === undefined || value === null) value = "";
+      value = String(value).replace(/"/g, '""');
+      if (value.includes(",") || value.includes("\n") || value.includes("\"")) {
+        value = `"${value}"`;
+      }
+      return value;
+    }).join(",");
+  });
+
+  const csv = [header, ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+
+  const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "team";
+  a.download = teamName + "_players.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* INITIALIZE */
+renderTeamList();
+</script>
+
+</body>
+</html>

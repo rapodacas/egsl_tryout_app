@@ -394,14 +394,17 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   <div id="allPlayersView">
     <h2>All Players</h2>
     <table class="players-table" id="playersTable">
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Avg</th>
-          <th>%</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
+        <thead> 
+            <tr> 
+                <th>Name</th>
+                <th>🦯💥</th>
+                <th>🥎</th>
+                <th>🏃</th>
+                <th>Avg</th>
+                <th>%</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
     </table>
   </div>
 
@@ -808,19 +811,44 @@ function buildPlayersTable() {
 
   // Compute stats for each player
   const rows = players.map((p, index) => {
+    // Category groups
+    const hittingFields = ["swing", "contact", "power"];
+    const fieldingFields = ["glove", "arm", "footwork"];
+    const intangiblesFields = ["speed", "hustle", "coachability"];
+
+    function avgOf(list) {
+        let s = 0, c = 0;
+        list.forEach(f => {
+        if (p[f] >= 1 && p[f] <= 4) {
+            s += p[f];
+            c++;
+        }
+        });
+        return c ? s / c : 0;
+    }
+
+    const hitting = avgOf(hittingFields);
+    const fielding = avgOf(fieldingFields);
+    const intangibles = avgOf(intangiblesFields);
+
+    // Overall
+    const allFields = [...hittingFields, ...fieldingFields, ...intangiblesFields];
     let sum = 0, count = 0;
-    fields.forEach(f => {
-      if (p[f] >= 1 && p[f] <= 4) {
+    allFields.forEach(f => {
+        if (p[f] >= 1 && p[f] <= 4) {
         sum += p[f];
         count++;
-      }
+        }
     });
 
     return {
-      index,
-      name: p.name || `Player ${index + 1}`,
-      avg: count ? sum / count : 0,
-      completion: fields.length ? (count / fields.length) * 100 : 0
+        index,
+        name: p.name || `Player ${index + 1}`,
+        hitting,
+        fielding,
+        intangibles,
+        avg: count ? sum / count : 0,
+        completion: allFields.length ? (count / allFields.length) * 100 : 0
     };
   });
 
@@ -841,9 +869,12 @@ function buildPlayersTable() {
   rows.forEach(r => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${r.name}</td>
-      <td>${r.avg.toFixed(1)}</td>
-      <td>${Math.round(r.completion)}</td>
+        <td>${r.name}</td>
+        <td>${r.hitting.toFixed(1)}</td>
+        <td>${r.fielding.toFixed(1)}</td>
+        <td>${r.intangibles.toFixed(1)}</td>
+        <td>${r.avg.toFixed(1)}</td>
+        <td>${Math.round(r.completion)}</td>
     `;
 
     tr.addEventListener("click", () => {
@@ -859,7 +890,15 @@ function buildPlayersTable() {
   // Make headers sortable
   const headers = thead.querySelectorAll("th");
   headers.forEach((th, i) => {
-    const colMap = ["name", "avg", "completion"];
+    const colMap = [
+        "name",
+        "hitting",
+        "fielding",
+        "intangibles",
+        "avg",
+        "completion"
+    ];
+
     const col = colMap[i];
 
     th.onclick = () => {

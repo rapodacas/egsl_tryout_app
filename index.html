@@ -597,6 +597,7 @@ function createTeam() {
   }
   input.value = "";
   renderTeamList();
+  seedTeam(name);
 }
 
 function selectTeam(key) {
@@ -786,54 +787,6 @@ function toggleAllPlayers() {
   }
 }
 
-// function buildPlayersTable() {
-//   const tbody = document.querySelector("#playersTable tbody");
-//   tbody.innerHTML = "";
-
-//   const fields = [
-//     "swing","contact","power",
-//     "glove","arm","footwork",
-//     "speed","hustle","coachability"
-//   ];
-
-//   players.forEach((p, index) => {
-//     const player = p || {};
-//     let sum = 0, count = 0;
-
-//     fields.forEach(f => {
-//       if (player[f] >= 1 && player[f] <= 4) {
-//         sum += player[f];
-//         count++;
-//       }
-//     });
-
-//     const avg = count ? (sum / count) : 0;
-//     const completion = fields.length ? (count / fields.length) * 100 : 0;
-
-//     const tr = document.createElement("tr");
-//     const nameCell = document.createElement("td");
-//     const avgCell = document.createElement("td");
-//     const compCell = document.createElement("td");
-
-//     nameCell.textContent = player.name || `Player ${index + 1}`;
-//     avgCell.textContent = avg.toFixed(1);
-//     compCell.textContent = Math.round(completion);
-
-//     tr.appendChild(nameCell);
-//     tr.appendChild(avgCell);
-//     tr.appendChild(compCell);
-
-//     tr.addEventListener("click", () => {
-//       current = index;
-//       document.getElementById("allPlayersView").style.display = "none";
-//       document.getElementById("playerCard").style.display = "block";
-//       loadPlayer();
-//     });
-
-//     tbody.appendChild(tr);
-//   });
-// }
-
 function buildPlayersTable() {
   const tbody = document.querySelector("#playersTable tbody");
   const thead = document.querySelector("#playersTable thead");
@@ -1010,6 +963,77 @@ document.getElementById("photoInput").addEventListener("change", function () {
 
 /* INITIALIZE */
 renderTeamList();
+function seedTeam(teamName) {
+  const names = [
+    "ILeiana Aguilar",
+    "Jana Almasri",
+    "Juliet Apodaca",
+    "Alannah Arguello",
+    "Shealey Belardes",
+    "Alexis Berggren",
+    "Katelyn Borecky",
+    "Cambria Brosnan",
+    "Angela Calixto",
+    "Natalie Cervantes",
+    "Penelope Cuevas",
+    "Avery Dean",
+    "Alyson Eden",
+    "Adeline Esquivel",
+    "Lily Esquivel",
+    "Aryanna Fernandez",
+    "Harper Flores",
+    "Kaylee Flores",
+    "Haley Franco",
+    "Evelyn Gardino",
+    "Maddison Garcia",
+    "Cora Gottlieb",
+    "Tavyn Green",
+    "Jaedyn Kandyce Grill",
+    "Leilani Hernandez",
+    "Kara Hutchinson",
+    "Lilyana Jordan",
+    "Aria Lopez",
+    "Bella Lopez",
+    "Bianca Lopez",
+    "Noelle Marquez",
+    "Caroline McDonald",
+    "Mila Medina",
+    "Samantha Mendoza",
+    "Dryden Miyajima",
+    "Kennedy Moralez",
+    "Madison Murphy",
+    "Hannah Nack",
+    "Leiyanah Paipa",
+    "Victoria Parker",
+    "Khloe Pettit",
+    "Katalina Ponce",
+    "Cierra Prieto",
+    "Madison Pulver",
+    "Aiyana Renteria",
+    "Kaylee Rhodes",
+    "Alysse Robles",
+    "Daliah Sanchez",
+    "Savannah Springsteen",
+    "Riley Tanner",
+    "Evelyn Tellez",
+    "Isabel Torres",
+    "Noshla Turner",
+    "Uushla Turner",
+    "Ariyana Ari Tyler",
+    "Olivia Vallejos",
+    "Stella Vega",
+    "Amelia Webber",
+    "Gloria Wiebel"
+  ];
+
+  const roster = names.map(n => ({ name: n }));
+
+  const key = "team_" + teamName;
+  localStorage.setItem(key, JSON.stringify(roster));
+
+  alert("Team seeded: " + teamName);
+}
+
 </script>
 
 </body>

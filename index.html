@@ -14,7 +14,6 @@
     overflow-x: hidden;
   }
 
-  /* Hidden by default, shown when active */
   .hidden {
     display: none;
   }
@@ -105,12 +104,12 @@
   }
 
   .player-controls button {
-    padding: 6px 8px;
+    padding: 6px 6px;
     border-radius: 8px;
     border: none;
     background: #007aff;
     color: white;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     margin-left: 4px;
   }
 
@@ -153,13 +152,12 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   }
 
-  h2 {
-    margin-top: 0;
-    font-size: 1.2rem;
-  }
-
   .field {
     margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fafafa;
   }
 
   label {
@@ -172,9 +170,11 @@
   input, textarea {
     width: 100%;
     padding: 6px 8px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 0.9rem;
+    box-sizing: border-box;
+    background: #fff;
   }
 
   textarea {
@@ -189,11 +189,68 @@
     color: #444;
   }
 
+  /* Profile Photo */
+.profile-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.profile-pic-wrapper {
+  width: 145px;
+  height: 145px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ccc;
+  background: #eaeaea;
+  flex-shrink: 0; /* prevents distortion */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.profile-pic-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* keeps aspect ratio while filling the circle */
+}
+
+  #photoInput {
+    display: none;
+  }
+
+  /* Throws/Bats pill buttons */
+  .throws-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .throws-option {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    font-size: 0.8rem;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .throws-option.selected {
+    background: #007aff;
+    color: #fff;
+    border-color: #007aff;
+  }
+
   /* Rating Grid */
   .rating-group-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 12px;
   }
 
@@ -201,6 +258,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fafafa;
   }
 
   .rating-label {
@@ -216,33 +277,27 @@
     justify-content: center;
   }
 
+  /* Rating circles reduced by 15% (22px) */
   .circle {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     border: 2px solid #ccc;
-    background: #fff;
+    background: #ffffff;
     cursor: pointer;
     box-sizing: border-box;
   }
 
-  .circle.selected.level-1 { background: #ffffff; border-color: #a0a0a0; }
-  .circle.selected.level-2 { background: #d8f5d0; border-color: #9fd59b; }
-  .circle.selected.level-3 { background: #b0eea3; border-color: #7fd471; }
-  .circle.selected.level-4 { background: #6ddc73; border-color: #3aaa43; }
-  .circle.selected.level-5 { background: #2f8f3a; border-color: #1a6124; }
+  /* Selected states, 4 levels, filled greens */
+  .circle.selected[data-level="1"] { background: #d9fdd3; border-color: #b4e8a7; }
+  .circle.selected[data-level="2"] { background: #b4f3a4; border-color: #88d874; }
+  .circle.selected[data-level="3"] { background: #7cdd76; border-color: #4fb44c; }
+  .circle.selected[data-level="4"] { background: #3a9c46; border-color: #287135; }
 
   /* Swipe Container */
   .swipe-container {
     width: 100%;
     touch-action: pan-y;
-  }
-
-  /* Player Info Grid */
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
   }
 
   /* All Players View */
@@ -286,7 +341,7 @@
   </div>
 </div>
 
-<!-- MAIN APP (HIDDEN UNTIL TEAM SELECTED) -->
+<!-- MAIN APP -->
 <div id="mainApp" class="hidden">
 
   <!-- TOP BAR -->
@@ -329,58 +384,69 @@
     </table>
   </div>
 
-  <!-- PLAYER CARD VIEW -->
+  <!-- PLAYER CARD -->
   <div class="swipe-container" id="swipeArea">
     <div class="card" id="playerCard">
 
-      <h2>Softball Tryout Card</h2>
+      <!-- PROFILE + NAME + THROWS -->
+      <div class="profile-row">
 
-      <!-- Player Info -->
-      <div class="info-grid">
-        <div class="field">
-          <label>Name</label>
-          <input type="text" data-field="name">
+        <!-- Profile Photo -->
+        <div class="profile-pic-wrapper" id="profilePicWrapper">
+          <img id="profilePic" src="" alt="">
+        </div>
+        <input type="file" id="photoInput" accept="image/*" capture="environment">
+
+        <!-- Name + Throws -->
+        <div>
+          <div class="field">
+            <label>Name</label>
+            <input type="text" data-field="name">
+          </div>
+
+          <div class="field">
+            <label>Throws/Bats</label>
+            <div class="throws-group" id="throwsGroup">
+              <div class="throws-option" data-throws-value="R/R">R/R</div>
+              <div class="throws-option" data-throws-value="R/L">R/L</div>
+              <div class="throws-option" data-throws-value="L/R">L/R</div>
+              <div class="throws-option" data-throws-value="L/L">L/L</div>
+            </div>
+          </div>
         </div>
 
-        <div class="field">
-          <label>Throws/Bats</label>
-          <input type="text" data-field="throws" placeholder="R/R, R/L, L/L">
-        </div>
       </div>
 
-      <!-- Ratings -->
+      <!-- RATINGS -->
       <div class="section-title">Hitting</div>
       <div class="rating-group-grid">
         <div class="rating-item">
           <div class="rating-label">Swing</div>
           <div class="rating-circles" data-field="swing">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
 
         <div class="rating-item">
           <div class="rating-label">Contact</div>
           <div class="rating-circles" data-field="contact">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
 
         <div class="rating-item">
           <div class="rating-label">Power</div>
           <div class="rating-circles" data-field="power">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
       </div>
@@ -390,33 +456,30 @@
         <div class="rating-item">
           <div class="rating-label">Glove</div>
           <div class="rating-circles" data-field="glove">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
 
         <div class="rating-item">
           <div class="rating-label">Arm</div>
           <div class="rating-circles" data-field="arm">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
 
         <div class="rating-item">
           <div class="rating-label">Footwork</div>
           <div class="rating-circles" data-field="footwork">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
       </div>
@@ -426,44 +489,42 @@
         <div class="rating-item">
           <div class="rating-label">Speed</div>
           <div class="rating-circles" data-field="speed">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
 
         <div class="rating-item">
           <div class="rating-label">Hustle</div>
           <div class="rating-circles" data-field="hustle">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
 
         <div class="rating-item">
           <div class="rating-label">Coachability</div>
           <div class="rating-circles" data-field="coachability">
-            <div class="circle level-1" data-level="1"></div>
-            <div class="circle level-2" data-level="2"></div>
-            <div class="circle level-3" data-level="3"></div>
-            <div class="circle level-4" data-level="4"></div>
-            <div class="circle level-5" data-level="5"></div>
+            <div class="circle" data-level="1"></div>
+            <div class="circle" data-level="2"></div>
+            <div class="circle" data-level="3"></div>
+            <div class="circle" data-level="4"></div>
           </div>
         </div>
       </div>
 
       <div class="section-title">Notes</div>
-      <textarea data-field="notes" placeholder="Strengths, weaknesses, recommended positions..."></textarea>
+      <div class="field">
+        <textarea data-field="notes" placeholder="Strengths, weaknesses, recommended positions..."></textarea>
+      </div>
 
     </div>
   </div>
 </div>
-
 <script>
 /* GLOBAL STATE */
 let currentTeamKey = null;
@@ -563,7 +624,7 @@ function updateSummary() {
 
   let sum = 0, count = 0;
   fields.forEach(f => {
-    if (p[f] >= 1 && p[f] <= 5) {
+    if (p[f] >= 1 && p[f] <= 4) {
       sum += p[f];
       count++;
     }
@@ -583,19 +644,39 @@ function loadPlayer() {
   const p = players[current] || {};
   document.getElementById("playerNameDisplay").textContent = p.name || `Player ${current + 1}`;
 
-  document.querySelectorAll("[data-field]").forEach(el => {
+  // Text inputs / textarea
+  document.querySelectorAll("input[data-field], textarea[data-field]").forEach(el => {
     const field = el.getAttribute("data-field");
-
-    if (el.classList.contains("rating-circles")) {
-      el.querySelectorAll(".circle").forEach(c => c.classList.remove("selected"));
-      if (p[field]) {
-        const match = el.querySelector(`.circle[data-level="${p[field]}"]`);
-        if (match) match.classList.add("selected");
-      }
-    } else {
-      el.value = p[field] || "";
-    }
+    el.value = p[field] || "";
   });
+
+  // Rating circles
+  document.querySelectorAll(".rating-circles").forEach(group => {
+    const field = group.getAttribute("data-field");
+    group.querySelectorAll(".circle").forEach(c => {
+      c.classList.remove("selected");
+      const level = parseInt(c.getAttribute("data-level"), 10);
+      if (p[field] === level) {
+        c.classList.add("selected");
+      }
+    });
+  });
+
+  // Throws/Bats pill buttons
+  const throwsValue = p.throws || "";
+  document.querySelectorAll(".throws-option").forEach(opt => {
+    const val = opt.getAttribute("data-throws-value");
+    if (val === throwsValue) opt.classList.add("selected");
+    else opt.classList.remove("selected");
+  });
+
+  // Profile photo
+  const profilePic = document.getElementById("profilePic");
+  if (p.photo) {
+    profilePic.src = p.photo;
+  } else {
+    profilePic.src = "";
+  }
 
   updateSummary();
 }
@@ -617,7 +698,7 @@ function deletePlayer() {
   loadPlayer();
 }
 
-/* INPUT HANDLERS */
+/* INPUT HANDLERS (name, notes) */
 document.addEventListener("input", e => {
   const el = e.target;
   if (!el.matches("input[data-field], textarea[data-field]")) return;
@@ -631,21 +712,34 @@ document.addEventListener("input", e => {
 
 /* RATING HANDLERS */
 document.addEventListener("click", e => {
+  // Rating circles
   const circle = e.target.closest(".circle");
-  if (!circle) return;
-  const group = circle.closest(".rating-circles");
-  if (!group) return;
+  if (circle) {
+    const group = circle.closest(".rating-circles");
+    if (group) {
+      const field = group.getAttribute("data-field");
+      const level = parseInt(circle.getAttribute("data-level"), 10);
+      if (!players[current]) players[current] = {};
+      players[current][field] = level;
+      save();
 
-  const field = group.getAttribute("data-field");
-  const level = parseInt(circle.getAttribute("data-level"), 10);
+      group.querySelectorAll(".circle").forEach(c => c.classList.remove("selected"));
+      circle.classList.add("selected");
+      updateSummary();
+    }
+  }
 
-  if (!players[current]) players[current] = {};
-  players[current][field] = level;
-  save();
+  // Throws/Bats pill buttons
+  const throwsOption = e.target.closest(".throws-option");
+  if (throwsOption) {
+    const value = throwsOption.getAttribute("data-throws-value");
+    if (!players[current]) players[current] = {};
+    players[current].throws = value;
+    save();
 
-  group.querySelectorAll(".circle").forEach(c => c.classList.remove("selected"));
-  circle.classList.add("selected");
-  updateSummary();
+    document.querySelectorAll(".throws-option").forEach(opt => opt.classList.remove("selected"));
+    throwsOption.classList.add("selected");
+  }
 });
 
 /* SWIPE NAVIGATION */
@@ -694,7 +788,7 @@ function buildPlayersTable() {
     let sum = 0, count = 0;
 
     fields.forEach(f => {
-      if (player[f] >= 1 && player[f] <= 5) {
+      if (player[f] >= 1 && player[f] <= 4) {
         sum += player[f];
         count++;
       }
@@ -740,7 +834,7 @@ function exportCSV() {
   ];
 
   const header = fields.join(",");
-  const rows = players.map((p, index) => {
+  const rows = players.map(p => {
     const player = p || {};
     return fields.map(field => {
       let value = player[field];
@@ -759,7 +853,6 @@ function exportCSV() {
 
   const a = document.createElement("a");
   a.href = url;
-
   const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "team";
   a.download = teamName + "_players.csv";
   document.body.appendChild(a);
@@ -768,9 +861,55 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
+/* PROFILE PHOTO HANDLING */
+document.getElementById("profilePicWrapper").addEventListener("click", () => {
+  document.getElementById("photoInput").click();
+});
+
+document.getElementById("photoInput").addEventListener("change", function () {
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      const maxSize = 300; // compress to ~300px
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const compressedData = canvas.toDataURL("image/jpeg", 0.7);
+
+      players[current].photo = compressedData;
+      save();
+      loadPlayer();
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 /* INITIALIZE */
 renderTeamList();
 </script>
 
 </body>
-</html>

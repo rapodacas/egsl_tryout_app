@@ -345,6 +345,8 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
      /* optional: adds breathing room */ 
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
 </head>
 
 <body>
@@ -372,7 +374,8 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
         <button onclick="toggleAllPlayers()">All Players</button>
         <button onclick="addPlayer()">+</button>
         <button onclick="deletePlayer()" style="font-size: 1.5rem;">🗑</button>
-        <button onclick="exportCSV()">Export</button>
+        <button onclick="exportCSV()">CSV</button>
+        <button onclick="exportPDF()">PDF</button>
       </div>
     </div>
 
@@ -925,7 +928,86 @@ function buildPlayersTable() {
   });
 }
 
-/* CSV EXPORT */
+/* PDF EXPORT */
+async function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+  const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "Team";
+  let y = 40;
+
+  doc.setFontSize(18);
+  doc.text(`${teamName} – Player Roster`, 40, y);
+  y += 30;
+
+  doc.setFontSize(12);
+
+  for (let i = 0; i < players.length; i++) {
+    const p = players[i];
+
+    // Section header
+    doc.setFontSize(14);
+    doc.text(`${i + 1}. ${p.name || "Unnamed Player"}`, 40, y);
+    y += 20;
+    doc.setFontSize(12);
+
+    // Photo
+    if (p.photo) {
+      try {
+        doc.addImage(p.photo, "JPEG", 40, y, 80, 80);
+      } catch (e) {
+        console.warn("Image failed to load for PDF:", e);
+      }
+    }
+
+    // Player info
+    let infoY = y;
+    if (p.photo) infoY += 90;
+
+    doc.text(`Throws/Bats: ${p.throws || "-"}`, 140, y + 15);
+
+    // Ratings
+    const ratingFields = [
+      ["Swing", p.swing],
+      ["Contact", p.contact],
+      ["Power", p.power],
+      ["Glove", p.glove],
+      ["Arm", p.arm],
+      ["Footwork", p.footwork],
+      ["Speed", p.speed],
+      ["Hustle", p.hustle],
+      ["Coachability", p.coachability]
+    ];
+
+    let ry = infoY;
+    ratingFields.forEach(([label, val]) => {
+      doc.text(`${label}: ${val || "-"}`, 40, ry);
+      ry += 16;
+    });
+
+    // Notes
+    if (p.notes) {
+      ry += 10;
+      doc.text("Notes:", 40, ry);
+      ry += 14;
+
+      const wrapped = doc.splitTextToSize(p.notes, 520);
+      doc.text(wrapped, 40, ry);
+      ry += wrapped.length * 14;
+    }
+
+    y = ry + 20;
+
+    // Page break if needed
+    if (y > 700) {
+      doc.addPage();
+      y = 40;
+    }
+  }
+
+  doc.save(`${teamName}_players.pdf`);
+}
+  
 /* CSV EXPORT */
 function exportCSV() {
   if (!players || players.length === 0) return;
@@ -1097,4 +1179,5 @@ function seedTeam(teamName) {
 </script>
 
 </body>
+
 

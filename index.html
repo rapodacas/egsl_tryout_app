@@ -381,6 +381,8 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
         <button onclick="deletePlayer()" style="font-size: 1.5rem;">🗑</button>
         <button onclick="exportCSV()">CSV</button>
         <button onclick="exportPDF()">PDF</button>
+        <button onclick="toggleTeamSummary()">Summary</button>
+
       </div>
     </div>
 
@@ -409,11 +411,25 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
                 <th>🦯💥</th>
                 <th>🥎</th>
                 <th>🏃</th>
-                <th>Avg</th>
+                <th>Overall</th>
                 <th>%</th>
             </tr>
         </thead>
         <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- TEAM SUMMARY VIEW -->
+  <div id="teamSummaryView" style="display:none; padding: 12px;">
+    <h2>Team Summary</h2>
+    <table class="players-table" id="teamSummaryTable">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Average</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
     </table>
   </div>
 
@@ -563,6 +579,113 @@ let currentTeamKey = null;
 let players = [];
 let current = 0;
 let sortState = { column: null, direction: 1 };
+
+function toggleTeamSummary() {
+  const summary = document.getElementById("teamSummaryView");
+  const card = document.getElementById("playerCard");
+  const list = document.getElementById("allPlayersView");
+
+  if (summary.style.display === "none" || summary.style.display === "") {
+    buildTeamSummary();
+    summary.style.display = "block";
+    card.style.display = "none";
+    list.style.display = "none";
+  } else {
+    summary.style.display = "none";
+    card.style.display = "block";
+  }
+}
+
+function buildTeamSummary() {
+  const tbody = document.querySelector("#teamSummaryTable tbody");
+  tbody.innerHTML = "";
+
+  // Subcategories (individual ratings)
+  const categories = {
+    swing: "Swing",
+    contact: "Contact",
+    power: "Power",
+    glove: "Glove",
+    arm: "Arm",
+    footwork: "Footwork",
+    speed: "Speed",
+    hustle: "Hustle",
+    coachability: "Coachability"
+  };
+
+  // Grouped categories
+  const groups = {
+    hitting: ["swing", "contact", "power"],
+    fielding: ["glove", "arm", "footwork"],
+    intangibles: ["speed", "hustle", "coachability"]
+  };
+
+  function avgOf(fields) {
+    let sum = 0, count = 0;
+    players.forEach(p => {
+      fields.forEach(f => {
+        if (p[f] >= 1 && p[f] <= 4) {
+          sum += p[f];
+          count++;
+        }
+      });
+    });
+    return count ? (sum / count) : 0;
+  }
+
+  // ⭐ SORTED SUBCATEGORIES FIRST
+  const sortedSubcats = Object.entries(categories)
+    .sort((a, b) => a[1].localeCompare(b[1])); // sort by label
+
+  sortedSubcats.forEach(([key, label]) => {
+    const avg = avgOf([key]).toFixed(2);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${label}</td>
+      <td>${avg}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // ⭐ SORTED GROUPED CATEGORIES NEXT
+  const groupLabels = {
+    hitting: "Hitting",
+    fielding: "Fielding",
+    intangibles: "Speed & Intangibles"
+  };
+
+  const sortedGroups = Object.keys(groups)
+    .sort((a, b) => groupLabels[a].localeCompare(groupLabels[b]));
+
+  sortedGroups.forEach(key => {
+    const avg = avgOf(groups[key]).toFixed(2);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${groupLabels[key]}</strong></td>
+      <td><strong>${avg}</strong></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // ⭐ OVERALL TEAM AVERAGE
+  const allFields = Object.keys(categories);
+  const overall = avgOf(allFields).toFixed(2);
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><strong>Overall Team Average</strong></td>
+    <td><strong>${overall}</strong></td>
+  `;
+  tbody.appendChild(tr);
+
+  // ⭐ PLAYER COUNT
+  const tr2 = document.createElement("tr");
+  tr2.innerHTML = `
+    <td><strong>Total Players</strong></td>
+    <td><strong>${players.length}</strong></td>
+  `;
+  tbody.appendChild(tr2);
+}
 
 /* TEAM MANAGEMENT */
 
@@ -726,12 +849,12 @@ function updateSummary() {
   });
 
   const avg = count ? sum / count : 0;
-  const completion = fields.length ? (count / fields.length) * 100 : 0;
+  const percent = fields.length ? (count / fields.length) * 100 : 0;
 
   document.getElementById("summaryScore").textContent = "Score: " + sum;
   document.getElementById("summaryAvg").textContent = "Avg: " + avg.toFixed(1);
-  document.getElementById("summaryCompletion").textContent = Math.round(completion) + "%";
-  document.getElementById("summaryProgress").style.width = completion + "%";
+  document.getElementById("summaryCompletion").textContent = Math.round(percent) + "%";
+  document.getElementById("summaryProgress").style.width = percent + "%";
 }
 
 /* LOAD PLAYER */
@@ -881,45 +1004,47 @@ function buildPlayersTable() {
 
   // Compute stats for each player
   const rows = players.map((p, index) => {
-    // Category groups
     const hittingFields = ["swing", "contact", "power"];
     const fieldingFields = ["glove", "arm", "footwork"];
     const intangiblesFields = ["speed", "hustle", "coachability"];
 
     function avgOf(list) {
-        let s = 0, c = 0;
-        list.forEach(f => {
+      let s = 0, c = 0;
+      list.forEach(f => {
         if (p[f] >= 1 && p[f] <= 4) {
-            s += p[f];
-            c++;
+          s += p[f];
+          c++;
         }
-        });
-        return c ? s / c : 0;
+      });
+      return c ? s / c : 0;
     }
 
+    // Category averages
     const hitting = avgOf(hittingFields);
     const fielding = avgOf(fieldingFields);
     const intangibles = avgOf(intangiblesFields);
 
-    // Overall
+    // Overall = sum of all 9 subcategories
     const allFields = [...hittingFields, ...fieldingFields, ...intangiblesFields];
-    let sum = 0, count = 0;
+    let overall = 0;
     allFields.forEach(f => {
-        if (p[f] >= 1 && p[f] <= 4) {
-        sum += p[f];
-        count++;
-        }
+      if (p[f] >= 1 && p[f] <= 4) {
+        overall += p[f];
+      }
     });
 
+    // Percent = overall / 36
+    const percent = overall / 36;
+
     return {
-        index,
-        seed: index + 1,
-        name: p.name || `Player ${index + 1}`,
-        hitting,
-        fielding,
-        intangibles,
-        avg: count ? sum / count : 0,
-        completion: allFields.length ? (count / allFields.length) * 100 : 0
+      index,
+      seed: index + 1,
+      name: p.name || `Player ${index + 1}`,
+      hitting,
+      fielding,
+      intangibles,
+      overall,
+      percent
     };
   });
 
@@ -945,8 +1070,8 @@ function buildPlayersTable() {
         <td>${r.hitting.toFixed(1)}</td>
         <td>${r.fielding.toFixed(1)}</td>
         <td>${r.intangibles.toFixed(1)}</td>
-        <td>${r.avg.toFixed(1)}</td>
-        <td>${Math.round(r.completion)}</td>
+        <td>${r.overall}</td>
+        <td>${Math.round(r.percent * 100)}%</td>
     `;
 
     tr.addEventListener("click", () => {
@@ -968,8 +1093,8 @@ function buildPlayersTable() {
         "hitting",
         "fielding",
         "intangibles",
-        "avg",
-        "completion"
+        "overall",
+        "percent"
     ];
 
     const col = colMap[i];

@@ -360,6 +360,11 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     <input type="text" id="newTeamName" placeholder="New team name (e.g., 12U A)">
     <button onclick="createTeam()">Create New Team</button>
   </div>
+  <div class="team-actions">
+    <button onclick="triggerCSVImport()">Import Team CSV</button>
+    <input type="file" id="teamCSVInput" accept=".csv" style="display:none">
+  </div>
+
 </div>
 
 <!-- MAIN APP -->
@@ -633,6 +638,67 @@ function selectTeam(key) {
 function showTeamSelect() {
   document.getElementById("mainApp").classList.add("hidden");
   document.getElementById("teamSelectScreen").classList.remove("hidden");
+  renderTeamList();
+}
+
+function triggerCSVImport() {
+  document.getElementById("teamCSVInput").click();
+}
+document.getElementById("teamCSVInput").addEventListener("change", function () {
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    importTeamFromCSV(e.target.result, file.name);
+  };
+  reader.readAsText(file);
+});
+function importTeamFromCSV(csvText, filename) {
+  const lines = csvText.trim().split(/\r?\n/);
+  if (lines.length < 2) {
+    alert("CSV appears empty or invalid.");
+    return;
+  }
+
+  const headers = lines[0].split(",").map(h => h.trim());
+  const players = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const raw = lines[i].trim();
+    if (!raw) continue;
+
+    const cols = raw.split(",");
+    const p = {};
+
+    headers.forEach((h, idx) => {
+      p[h] = cols[idx] ? cols[idx].trim() : "";
+    });
+
+    // Normalize fields your app expects
+    p.name = p.name || p.Name || "";
+    p.throws = p.throws || p.Throws || "";
+    p.notes = p.notes && p.notes.replace(/"/g, '') || "";
+
+    // Convert ratings to numbers
+    ["swing","contact","power","glove","arm","footwork","speed","hustle","coachability"]
+      .forEach(f => p[f] = Number(p[f]) || 0);
+
+    // Photo (Base64) if included
+    if (p.photo) p.photo = p.photo;
+
+    players.push(p);
+  }
+
+  // Team name from filename
+  const teamName = filename.replace(".csv", "");
+  const key = "team_" + teamName;
+
+  localStorage.setItem(key, JSON.stringify(players));
+
+  alert(`Imported ${players.length} players into team: ${teamName}`);
+
+  // Refresh team list
   renderTeamList();
 }
 

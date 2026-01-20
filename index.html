@@ -756,6 +756,10 @@ function selectTeam(key) {
   document.getElementById("mainApp").classList.remove("hidden");
 
   loadPlayer();
+  buildPlayersTable();
+  document.getElementById("allPlayersView").style.display = "block";
+  document.getElementById("playerCard").style.display = "none";
+  document.getElementById("teamSummaryView").style.display = "none";
 }
 
 function showTeamSelect() {

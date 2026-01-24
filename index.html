@@ -387,50 +387,26 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     display: flex;
     gap: 6px;
   }
-    /* Rating circles reduced by 15% (22px) */
-  /* .circle {
+
+  .circle {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    border: 2px solid #ccc;
-    background: #ffffff;
-    cursor: pointer;
-    box-sizing: border-box;
+    border: 1px solid #aaa;
+    background: #eaeaea;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
- */
- 
- .circle {
-   width: 18px;
-   height: 18px;
-   border-radius: 50%;
-   border: 1px solid #aaa;
-   background: #eaeaea;
-   transition: background 0.15s ease,
-   border-color 0.15s ease;
+
+  .circle.active-blue {
+    background-color: #007bff;
+    border-color: #007bff;
   }
-  /* Selected states, 4 levels, filled greens */
-  .circle.selected[data-level="1"] { background: #d9fdd3; border-color: #b4e8a7; }
-  .circle.selected[data-level="2"] { background: #b4f3a4; border-color: #88d874; }
-  .circle.selected[data-level="3"] { background: #7cdd76; border-color: #4fb44c; }
-  .circle.selected[data-level="4"] { background: #3a9c46; border-color: #287135; }
-  /* ACTIVE (selected) circle */
-  .circle.active {
-    background: #007aff;
-    border-color: #007aff;
+
+  .circle.active-green {
+    background-color: #28a745;
+    border-color: #28a745;
   }
-  /* EDITABLE STATE (newest session) */
-  .progress-record.editable .circle {
-    cursor: pointer;
-  }
-  .progress-record.editable .circle:hover {
-    border-color: #007aff;
-  }
-  
-  /* READ-ONLY MODE */
-  .progress-record.readonly .circle {
-    opacity: 0.5;
-    pointer-events: none;
-  }
+
   /* PROGRESS META */
   .progress-meta { 
     display: flex;
@@ -1662,6 +1638,39 @@ function renderProgressPanel(category) {
   document.getElementById(`${category}RecordDate`).textContent =
     formatDate(record.date);
 
+  // 3. UPDATE RATING CIRCLES
+  const fields = Object.keys(record).filter(
+    k => k !== "date" && k !== "media"
+  );
+
+  fields.forEach(field => {
+    const circles = document.querySelectorAll(
+      `#progress-${category} .rating-circles[data-field="${field}"] .circle`
+    );
+
+    circles.forEach(circle => {
+      const level = Number(circle.dataset.level);
+
+      // Always reset classes first
+      circle.classList.remove("active-blue", "active-green");
+
+      // Newest session → blue
+      if (index === 0) {
+        if (record[field] === level) {
+          circle.classList.add("active-blue");
+        }
+        circle.style.pointerEvents = "auto";
+      }
+
+      // Older sessions → green + disabled
+      else {
+        if (record[field] === level) {
+          circle.classList.add("active-green");
+        }
+        circle.style.pointerEvents = "none";
+      }
+    });
+  });
   renderAttachments(category, record);
 }
 

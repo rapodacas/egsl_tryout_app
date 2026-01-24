@@ -592,35 +592,6 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
           <div class="progress-record" id="hittingRecord">
             <!-- Rating circles (same UI for all sessions) -->
             <div class="rating-group-grid">
-              <div class="rating-item">
-                <div class="rating-label">Swing</div>
-                <div class="rating-circles" data-field="swing">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
-
-              <div class="rating-item">
-                <div class="rating-label">Contact</div>
-                <div class="rating-circles" data-field="contact">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
-
-              <div class="rating-item">
-                <div class="rating-label">Power</div>
-                <div class="rating-circles" data-field="power">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
             </div>
             <!-- Meta info for this session -->
             <div class="progress-meta">
@@ -638,35 +609,6 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
         <div class="progress-panel" id="progress-fielding">
           <div class="progress-record" id="fieldingRecord">
             <div class="rating-group-grid">
-              <div class="rating-item">
-                <div class="rating-label">Glove</div>
-                <div class="rating-circles" data-field="glove">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
-
-              <div class="rating-item">
-                <div class="rating-label">Arm</div>
-                <div class="rating-circles" data-field="arm">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
-
-              <div class="rating-item">
-                <div class="rating-label">Footwork</div>
-                <div class="rating-circles" data-field="footwork">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
             </div>
             <div class="progress-meta">
               <span id="fieldingRecordIndex">Session 1 of 1</span>
@@ -683,35 +625,6 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
         <div class="progress-panel" id="progress-intangibles">
           <div class="progress-record" id="intangiblesRecord">
             <div class="rating-group-grid">
-              <div class="rating-item">
-                <div class="rating-label">Speed</div>
-                <div class="rating-circles" data-field="speed">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
-
-              <div class="rating-item">
-                <div class="rating-label">Hustle</div>
-                <div class="rating-circles" data-field="hustle">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
-
-              <div class="rating-item">
-                <div class="rating-label">Coachability</div>
-                <div class="rating-circles" data-field="coachability">
-                  <div class="circle" data-level="1"></div>
-                  <div class="circle" data-level="2"></div>
-                  <div class="circle" data-level="3"></div>
-                  <div class="circle" data-level="4"></div>
-                </div>
-              </div>
             </div>
 
             <div class="progress-meta">
@@ -727,6 +640,27 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   </div>
 </div>
 <script>
+const RATING_CONFIGS = {
+  1: {
+    hitting: [
+      { field: "swing",        label: "Swing",        max: 4, weight: 1, order: 1 },
+      { field: "contact",      label: "Contact",      max: 4, weight: 1, order: 2 },
+      { field: "power",        label: "Power",        max: 4, weight: 1, order: 3 }
+    ],
+    fielding: [
+      { field: "glove",        label: "Glove",        max: 4, weight: 1, order: 1 },
+      { field: "arm",          label: "Arm",          max: 4, weight: 1, order: 2 },
+      { field: "footwork",     label: "Footwork",     max: 4, weight: 1, order: 3 }
+    ],
+    intangibles: [
+      { field: "speed",        label: "Speed",        max: 4, weight: 1, order: 1 },
+      { field: "hustle",       label: "Hustle",       max: 4, weight: 1, order: 2 },
+      { field: "coachability", label: "Coachability", max: 4, weight: 1, order: 3 }
+    ]
+  }
+};
+const LATEST_CONFIG_VERSION = 1;
+
 /* GLOBAL STATE */
 let currentTeamKey = null;
 let players = [];
@@ -758,91 +692,185 @@ function buildTeamSummary() {
   const tbody = document.querySelector("#teamSummaryTable tbody");
   tbody.innerHTML = "";
 
-  // Subcategories (individual ratings)
-  const categories = {
-    swing: "Swing",
-    contact: "Contact",
-    power: "Power",
-    glove: "Glove",
-    arm: "Arm",
-    footwork: "Footwork",
-    speed: "Speed",
-    hustle: "Hustle",
-    coachability: "Coachability"
-  };
+  //
+  // 1. Build a unified list of all possible fields across all versions
+  //
+  const allItems = [];
 
-  // Grouped categories
-  const groups = {
-    hitting: ["swing", "contact", "power"],
-    fielding: ["glove", "arm", "footwork"],
-    intangibles: ["speed", "hustle", "coachability"]
-  };
+  Object.values(RATING_CONFIGS).forEach(cfg => {
+    if (!cfg) return; // defensive
 
-  function avgOf(fields) {
-    let sum = 0, count = 0;
-    players.forEach(p => {
-      fields.forEach(f => {
-        if (p[f] >= 1 && p[f] <= 4) {
-          sum += p[f];
-          count++;
+    Object.keys(cfg).forEach(cat => {
+      const items = cfg[cat];
+      if (!Array.isArray(items)) return; // defensive
+
+      items.forEach(item => {
+        if (!allItems.find(x => x.field === item.field)) {
+          allItems.push({
+            field: item.field,
+            label: item.label
+          });
         }
       });
     });
-    return count ? (sum / count) : 0;
+  });
+
+  //
+  // 2. Compute weighted averages for any set of fields
+  //
+  function avgOf(fields) {
+    let sum = 0;
+    let weightSum = 0;
+
+    players.forEach(p => {
+      const latestVersion = p.progress.hitting[0].configVersion;
+      const cfg = RATING_CONFIGS[latestVersion];
+
+      fields.forEach(f => {
+        // Find this field in the player's version
+        const item = Object.values(cfg)
+          .flat()
+          .find(x => x.field === f.field);
+
+        if (!item) return;
+
+        const val = p[f.field];
+        if (val >= 1 && val <= item.max) {
+          sum += val * item.weight;
+          weightSum += item.weight;
+        }
+      });
+    });
+    return weightSum ? sum / weightSum : 0;
   }
 
-  // ⭐ SORTED SUBCATEGORIES FIRST
-  const sortedSubcats = Object.entries(categories)
-    .sort((a, b) => a[1].localeCompare(b[1])); // sort by label
+  //
+  // 3. Subcategories (sorted alphabetically)
+  //
+  const sortedSubcats = allItems.sort((a, b) =>
+    a.label.localeCompare(b.label)
+  );
 
-  sortedSubcats.forEach(([key, label]) => {
-    const avg = avgOf([key]).toFixed(2);
+  sortedSubcats.forEach(item => {
+    const avg = avgOf([item]).toFixed(2);
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${label}</td>
+      <td>${item.label}</td>
       <td>${avg}</td>
     `;
     tbody.appendChild(tr);
   });
 
-  // ⭐ SORTED GROUPED CATEGORIES NEXT
+  //
+  // 4. Grouped categories (using latest config for labels)
+  //
+  const latestCfg = RATING_CONFIGS[LATEST_CONFIG_VERSION];
+
   const groupLabels = {
     hitting: "Hitting",
     fielding: "Fielding",
     intangibles: "Speed & Intangibles"
   };
 
-  const sortedGroups = Object.keys(groups)
-    .sort((a, b) => groupLabels[a].localeCompare(groupLabels[b]));
+  Object.keys(latestCfg)
+    .sort((a, b) => groupLabels[a].localeCompare(groupLabels[b]))
+    .forEach(cat => {
+      const items = latestCfg[cat];
+      const avg = avgOf(items).toFixed(2);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${groupLabels[cat]}</strong></td>
+        <td><strong>${avg}</strong></td>
+      `;
+      tbody.appendChild(tr);
+    });
 
-  sortedGroups.forEach(key => {
-    const avg = avgOf(groups[key]).toFixed(2);
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><strong>${groupLabels[key]}</strong></td>
-      <td><strong>${avg}</strong></td>
-    `;
-    tbody.appendChild(tr);
-  });
+  //
+  // 5. Overall team average
+  //
+  const overall = avgOf(allItems).toFixed(2);
 
-  // ⭐ OVERALL TEAM AVERAGE
-  const allFields = Object.keys(categories);
-  const overall = avgOf(allFields).toFixed(2);
-
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
+  const trOverall = document.createElement("tr");
+  trOverall.innerHTML = `
     <td><strong>Overall Team Average</strong></td>
     <td><strong>${overall}</strong></td>
   `;
-  tbody.appendChild(tr);
+  tbody.appendChild(trOverall);
 
-  // ⭐ PLAYER COUNT
-  const tr2 = document.createElement("tr");
-  tr2.innerHTML = `
+  //
+  // 6. Player count
+  //
+  const trCount = document.createElement("tr");
+  trCount.innerHTML = `
     <td><strong>Total Players</strong></td>
     <td><strong>${players.length}</strong></td>
   `;
-  tbody.appendChild(tr2);
+  tbody.appendChild(trCount);
+}
+
+function normalizeRecord(rec, category) {
+  // Fallback version for legacy records
+  let version = rec.configVersion || 1;
+
+  // If somehow version is unknown, fall back to 1
+  if (!RATING_CONFIGS[version]) {
+    version = 1;
+  }
+
+  rec.configVersion = version;
+
+  const cfg = RATING_CONFIGS[version][category];
+  if (!cfg) return rec; // defensive
+
+  // Ensure media exists
+  if (!rec.media || !rec.media.attachments) {
+    rec.media = { attachments: [] };
+  }
+
+  // Ensure all fields from this version exist
+  cfg.forEach(item => {
+    if (rec[item.field] == null) {
+      rec[item.field] = 1; // default
+    }
+  });
+
+  return rec;
+}
+function normalizePlayer(p) {
+  if (!p.progress) p.progress = {};
+
+  const cats = ["hitting", "fielding", "intangibles"];
+
+  cats.forEach(cat => {
+    // Ensure category array exists
+    if (!Array.isArray(p.progress[cat]) || p.progress[cat].length === 0) {
+      const today = new Date().toISOString().split("T")[0];
+      const version = 1; // legacy default
+      const cfg = RATING_CONFIGS[version][cat];
+
+      const rec = {
+        date: today,
+        media: { attachments: [] },
+        configVersion: version
+      };
+
+      cfg.forEach(item => {
+        rec[item.field] = 1;
+      });
+
+      p.progress[cat] = [rec];
+    }
+
+    // Normalize each record in this category
+    p.progress[cat] = p.progress[cat].map(rec => normalizeRecord(rec, cat));
+  });
+
+  return p;
+}
+
+function normalizeAllPlayers() {
+  players = players.map(p => normalizePlayer(p));
+  save(); // optional, if you want to persist the normalized shape
 }
 
 /* TEAM MANAGEMENT */
@@ -1217,70 +1245,63 @@ function toggleAllPlayers() {
     card.style.display = "block";
   }
 }
-
 function buildPlayersTable() {
   const tbody = document.querySelector("#playersTable tbody");
   const thead = document.querySelector("#playersTable thead");
   tbody.innerHTML = "";
 
-  const fields = [
-    "swing","contact","power",
-    "glove","arm","footwork",
-    "speed","hustle","coachability"
-  ];
-
-  // Compute stats for each player
   const rows = players.map((p, index) => {
-    const hittingFields = ["swing", "contact", "power"];
-    const fieldingFields = ["glove", "arm", "footwork"];
-    const intangiblesFields = ["speed", "hustle", "coachability"];
 
-    function avgOf(list) {
-      let s = 0, c = 0;
-      list.forEach(f => {
-        if (p[f] >= 1 && p[f] <= 4) {
-          s += p[f];
-          c++;
+    // Determine each player's latest config version
+    // const latestVersion = p.progress.hitting[0].configVersion || 1;
+    ensurePlayerProgress(p);
+    const latestVersion = getPlayerLatestVersion(p);
+    const cfg = RATING_CONFIGS[latestVersion];
+
+    function categoryStats(cat) {
+      const items = cfg[cat];
+
+      let sum = 0;
+      let maxSum = 0;
+
+      items.forEach(item => {
+        const val = p[item.field];
+        if (val >= 1 && val <= item.max) {
+          sum += val * item.weight;
         }
+        maxSum += item.max * item.weight;
       });
-      return c ? s / c : 0;
+
+      const avg = sum / items.length;
+      return { avg, sum, maxSum };
     }
 
-    // Category averages
-    const hitting = avgOf(hittingFields);
-    const fielding = avgOf(fieldingFields);
-    const intangibles = avgOf(intangiblesFields);
+    const hit = categoryStats("hitting");
+    const fld = categoryStats("fielding");
+    const intg = categoryStats("intangibles");
 
-    // Overall = sum of all 9 subcategories
-    const allFields = [...hittingFields, ...fieldingFields, ...intangiblesFields];
-    let overall = 0;
-    allFields.forEach(f => {
-      if (p[f] >= 1 && p[f] <= 4) {
-        overall += p[f];
-      }
-    });
-
-    // Percent = overall / 36
-    const percent = overall / 36;
+    const overall = hit.sum + fld.sum + intg.sum;
+    const overallMax = hit.maxSum + fld.maxSum + intg.maxSum;
+    const percent = overallMax ? overall / overallMax : 0;
 
     return {
       index,
       seed: index + 1,
       name: p.name || `Player ${index + 1}`,
-      hitting,
-      fielding,
-      intangibles,
+      hitting: hit.avg,
+      fielding: fld.avg,
+      intangibles: intg.avg,
       overall,
       percent
     };
   });
-  
-  // Apply sorting
+
+  // Sorting logic unchanged
   if (sortState.column) {
     rows.sort((a, b) => {
       const col = sortState.column;
       const dir = sortState.direction;
-      
+
       if (typeof a[col] === "string") {
         return a[col].localeCompare(b[col]) * dir;
       }
@@ -1288,18 +1309,17 @@ function buildPlayersTable() {
     });
   }
   sortedPlayerOrder = rows.map(r => r.index);
-  
-  // Render rows
+
   rows.forEach(r => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-        <td>${r.seed}</td>
-        <td>${r.name}</td>
-        <td>${r.hitting.toFixed(1)}</td>
-        <td>${r.fielding.toFixed(1)}</td>
-        <td>${r.intangibles.toFixed(1)}</td>
-        <td>${r.overall}</td>
-        <td>${Math.round(r.percent * 100)}%</td>
+      <td>${r.seed}</td>
+      <td>${r.name}</td>
+      <td>${r.hitting.toFixed(1)}</td>
+      <td>${r.fielding.toFixed(1)}</td>
+      <td>${r.intangibles.toFixed(1)}</td>
+      <td>${r.overall.toFixed(1)}</td>
+      <td>${Math.round(r.percent * 100)}%</td>
     `;
 
     tr.addEventListener("click", () => {
@@ -1313,23 +1333,22 @@ function buildPlayersTable() {
     tbody.appendChild(tr);
   });
 
-  // Make headers sortable
+  // Header sorting unchanged
   const headers = thead.querySelectorAll("th");
   headers.forEach((th, i) => {
     const colMap = [
-        "seed",
-        "name",
-        "hitting",
-        "fielding",
-        "intangibles",
-        "overall",
-        "percent"
+      "seed",
+      "name",
+      "hitting",
+      "fielding",
+      "intangibles",
+      "overall",
+      "percent"
     ];
 
     const col = colMap[i];
 
     th.onclick = () => {
-      // Toggle direction if clicking same column
       if (sortState.column === col) {
         sortState.direction *= -1;
       } else {
@@ -1337,10 +1356,7 @@ function buildPlayersTable() {
         sortState.direction = 1;
       }
 
-      // Clear previous sort indicators
       headers.forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
-
-      // Add new indicator
       th.classList.add(sortState.direction === 1 ? "sorted-asc" : "sorted-desc");
 
       buildPlayersTable();
@@ -1484,35 +1500,69 @@ function initProgressSwipeListeners() {
 }
 
 function defaultProgressFor(player) {
+  const today = new Date().toISOString().split("T")[0];
+
+  function makeCategory(cat) {
+    const cfg = RATING_CONFIGS[LATEST_CONFIG_VERSION][cat];
+
+    const obj = {
+      date: today,
+      media: { attachments: [] },
+      configVersion: LATEST_CONFIG_VERSION
+    };
+
+    cfg.forEach(item => {
+      obj[item.field] = player[item.field] ?? 1;
+    });
+
+    return [obj];
+  }
+
   return {
-    hitting: [
-      {
-        date: new Date().toISOString().split("T")[0],
-        swing: player.swing ?? 1,
-        contact: player.contact ?? 1,
-        power: player.power ?? 1,
-        media: { attachments: [] }
-      }
-    ],
-    fielding: [
-      {
-        date: new Date().toISOString().split("T")[0],
-        glove: player.glove ?? 1,
-        arm: player.arm ?? 1,
-        footwork: player.footwork ?? 1,
-        media: { attachments: [] }
-      }
-    ],
-    intangibles: [
-      {
-        date: new Date().toISOString().split("T")[0],
-        speed: player.speed ?? 1,
-        hustle: player.hustle ?? 1,
-        coachability: player.coachability ?? 1,
-        media: { attachments: [] }
-      }
-    ]
+    hitting: makeCategory("hitting"),
+    fielding: makeCategory("fielding"),
+    intangibles: makeCategory("intangibles")
   };
+}
+
+function ensurePlayerProgress(p) {
+  if (!p.progress) p.progress = {};
+
+  ["hitting", "fielding", "intangibles"].forEach(cat => {
+    if (!Array.isArray(p.progress[cat]) || p.progress[cat].length === 0) {
+      // Create a default record using version 1
+      const today = new Date().toISOString().split("T")[0];
+      const cfg = RATING_CONFIGS[1][cat];
+
+      const rec = {
+        date: today,
+        media: { attachments: [] },
+        configVersion: 1
+      };
+
+      cfg.forEach(item => {
+        rec[item.field] = 1;
+      });
+
+      p.progress[cat] = [rec];
+    }
+  });
+
+  return p;
+}
+
+function getPlayerLatestVersion(p) {
+  const cats = ["hitting", "fielding", "intangibles"];
+  let version = 1;
+
+  cats.forEach(cat => {
+    const rec = p.progress[cat][0];
+    if (rec && rec.configVersion && rec.configVersion > version) {
+      version = rec.configVersion;
+    }
+  });
+
+  return version;
 }
 
 function setupSwipe(category) {
@@ -1594,16 +1644,32 @@ function animateSwipe(category, direction) {
 function createNewProgressRecord(category) {
   const player = players[current];
   const records = player.progress[category];
+  const latestRecord = records[0]; // previous newest session
 
-  const latest = records[0];
+  const today = new Date().toISOString().split("T")[0];
+
+  // Use the latest config version
+  const cfg = RATING_CONFIGS[LATEST_CONFIG_VERSION][category];
 
   const newRecord = {
-    date: new Date().toISOString().split("T")[0],
-    ...latest,
-    media: { attachments: [] }
+    date: today,
+    media: { attachments: [] },
+    configVersion: LATEST_CONFIG_VERSION
   };
 
+  // Copy forward values when possible
+  cfg.forEach(item => {
+    if (latestRecord && latestRecord[item.field] != null) {
+      newRecord[item.field] = latestRecord[item.field];
+    } else {
+      newRecord[item.field] = 1; // default for new fields
+    }
+  });
+
+  // Insert at the front
   records.unshift(newRecord);
+
+  // Reset index to newest
   progressState[category].index = 0;
 
   save();
@@ -1614,6 +1680,8 @@ function renderProgressPanel(category) {
   const records = player.progress[category];
   const index = progressState[category].index;
   const record = records[index];
+  const version = record.configVersion || 1;
+  const cfg = RATING_CONFIGS[version][category];
 
   const recordEl = document.getElementById(`${category}Record`);
 
@@ -1629,7 +1697,7 @@ function renderProgressPanel(category) {
   }
 
   //
-  // 2. UPDATE META LABELS
+  // 2. META LABELS
   //
   const visualNumber = records.length - index;
   document.getElementById(`${category}RecordIndex`).textContent =
@@ -1638,12 +1706,50 @@ function renderProgressPanel(category) {
   document.getElementById(`${category}RecordDate`).textContent =
     formatDate(record.date);
 
-  // 3. UPDATE RATING CIRCLES
-  const fields = Object.keys(record).filter(
-    k => k !== "date" && k !== "media"
-  );
+  //
+  // 3. BUILD RATING ITEMS (versioned)
+  //
+  const ratingGroup = document.querySelector(`#progress-${category} .rating-group-grid`);
 
-  fields.forEach(field => {
+  ratingGroup.innerHTML =
+    cfg
+      .sort((a, b) => a.order - b.order)
+      .map(item => `
+        <div class="rating-item">
+          <div class="rating-label">${item.label}</div>
+          <div class="rating-circles" data-field="${item.field}">
+            ${Array.from({ length: item.max }, (_, i) => `
+              <div class="circle" data-level="${i + 1}"></div>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+
+  //
+  // 4. REATTACH CLICK HANDLERS (only for newest session)
+  //
+  if (index === 0) {
+    cfg.forEach(item => {
+      const circles = document.querySelectorAll(
+        `#progress-${category} .rating-circles[data-field="${item.field}"] .circle`
+      );
+
+      circles.forEach(circle => {
+        circle.addEventListener("click", () => {
+          const level = Number(circle.dataset.level);
+          record[item.field] = level;
+          renderProgressPanel(category);
+          save();
+        });
+      });
+    });
+  }
+
+  //
+  // 5. UPDATE CIRCLE COLORS
+  //
+  cfg.forEach(item => {
+    const field = item.field;
     const circles = document.querySelectorAll(
       `#progress-${category} .rating-circles[data-field="${field}"] .circle`
     );
@@ -1651,26 +1757,21 @@ function renderProgressPanel(category) {
     circles.forEach(circle => {
       const level = Number(circle.dataset.level);
 
-      // Always reset classes first
       circle.classList.remove("active-blue", "active-green");
 
-      // Newest session → blue
       if (index === 0) {
-        if (record[field] === level) {
-          circle.classList.add("active-blue");
-        }
+        if (record[field] === level) circle.classList.add("active-blue");
         circle.style.pointerEvents = "auto";
-      }
-
-      // Older sessions → green + disabled
-      else {
-        if (record[field] === level) {
-          circle.classList.add("active-green");
-        }
+      } else {
+        if (record[field] === level) circle.classList.add("active-green");
         circle.style.pointerEvents = "none";
       }
     });
   });
+
+  //
+  // 6. ATTACHMENTS
+  //
   renderAttachments(category, record);
 }
 
@@ -1809,6 +1910,8 @@ document.getElementById("photoInput").addEventListener("change", function () {
   reader.readAsDataURL(file);
 });
 
+normalizeAllPlayers();
+buildPlayersTable();
 /* INITIALIZE */
 renderTeamList();
 initCircleListeners();

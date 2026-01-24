@@ -100,7 +100,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   }
 
   .player-name {
-    font-size: 3.0rem;
+    font-size: 2.0rem;
     font-weight: 700;
   }
 
@@ -150,8 +150,8 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   /* Card */
   .card {
     background: white;
-    margin: 12px;
-    padding: 16px;
+    margin: 6px;
+    padding: 8px;
     border-radius: 14px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   }
@@ -185,41 +185,34 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     min-height: 60px;
   }
 
-  .section-title {
-    margin-top: 16px;
-    margin-bottom: 6px;
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #444;
-  }
 
   /* Profile Photo */
-.profile-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
+  .profile-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
 
-.profile-pic-wrapper {
-  width: 145px;
-  height: 145px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid #ccc;
-  background: #eaeaea;
-  flex-shrink: 0; /* prevents distortion */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
+  .profile-pic-wrapper {
+    width: 145px;
+    height: 145px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #ccc;
+    background: #eaeaea;
+    flex-shrink: 0; /* prevents distortion */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
 
-.profile-pic-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* keeps aspect ratio while filling the circle */
-}
+  .profile-pic-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* keeps aspect ratio while filling the circle */
+  }
 
   #photoInput {
     display: none;
@@ -248,60 +241,6 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     background: #007aff;
     color: #fff;
     border-color: #007aff;
-  }
-
-  /* Rating Grid */
-  .rating-group-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .rating-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 8px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    background: #fafafa;
-  }
-
-  .rating-label {
-    font-size: 1.3rem;
-    margin-bottom: 6px;
-    font-weight: 600;
-    text-align: center;
-  }
-
-  .rating-circles {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
-  }
-
-  /* Rating circles reduced by 15% (22px) */
-  .circle {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 2px solid #ccc;
-    background: #ffffff;
-    cursor: pointer;
-    box-sizing: border-box;
-  }
-
-  /* Selected states, 4 levels, filled greens */
-  .circle.selected[data-level="1"] { background: #d9fdd3; border-color: #b4e8a7; }
-  .circle.selected[data-level="2"] { background: #b4f3a4; border-color: #88d874; }
-  .circle.selected[data-level="3"] { background: #7cdd76; border-color: #4fb44c; }
-  .circle.selected[data-level="4"] { background: #3a9c46; border-color: #287135; }
-
-  /* Swipe Container */
-  .swipe-container {
-    width: 100%;
-    touch-action: pan-y;
   }
 
   /* All Players View */
@@ -339,11 +278,202 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   /* Sortable column cursor */ .players-table th { cursor: pointer; user-select: none; }
   /* Highlight sorted column */ .players-table th.sorted-asc::after { content: " ▲"; font-size: 0.7rem; } 
   .players-table th.sorted-desc::after { content: " ▼"; font-size: 0.7rem; }
-/* Left-align only the Player column */
-.players-table td:first-child, .players-table th:first-child {
-     text-align: left; padding-left: 8px; 
-     /* optional: adds breathing room */ 
-}
+  /* Left-align only the Player column */
+  .players-table td:first-child, .players-table th:first-child {
+      text-align: left; padding-left: 8px; 
+      /* optional: adds breathing room */ 
+  }
+
+  /* PLAYER NAVIGATION BAR */
+  #playerNavBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    padding: 8px 12px;
+    border-bottom: 1px solid #d0d0d5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  #playerNavBar .nav-arrow {
+    background: #f2f2f7;
+    border: 1px solid #c8c8cc;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 20px;
+    cursor: pointer;
+    min-width: 40px;
+    transition: background 0.15s ease;
+  }
+
+  #playerNavBar .nav-arrow:active {
+    background: #e0e0e5;
+  }
+
+  #playerNavBar .nav-arrow:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  #navPlayerTitle {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  #navPlayerTitle:active {
+    opacity: 0.6;
+  }
+
+  /* CATEGORY CARD WRAPPER */
+  .category-card {
+    background: #ffffff;
+    border: 1px solid #d0d0d5;
+    border-radius: 10px;
+    padding: 6px;
+    margin-bottom: 10px;
+  }
+  
+  /* CATEGORY TITLE */
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  
+  /* SWIPABLE PANEL */
+  .progress-panel {
+    background: #fafafa;
+    border: 1px solid #d0d0d5;
+    border-radius: 8px;
+    padding: 12px;
+    user-select: none;
+    transition: transform 0.15s ease;
+  }
+  
+  /* SWIPE ANIMATION STATES */
+  .progress-panel.swipe-left {
+    transform: translateX(-20px);
+  }
+  .progress-panel.swipe-right {
+    transform: translateX(20px);
+  }
+  /* UNIFIED RECORD UI */
+  .progress-record {
+    display: flex;
+    flex-direction: column;
+    gap: 14px; 
+  }
+  /* RATING GRID (CIRCLES) */
+  .rating-group-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .rating-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .rating-label {
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #444;
+  }
+  /* CIRCLE UI */
+  .rating-circles {
+    display: flex;
+    gap: 6px;
+  }
+    /* Rating circles reduced by 15% (22px) */
+  /* .circle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: #ffffff;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+ */
+ 
+ .circle {
+   width: 18px;
+   height: 18px;
+   border-radius: 50%;
+   border: 1px solid #aaa;
+   background: #eaeaea;
+   transition: background 0.15s ease,
+   border-color 0.15s ease;
+  }
+  /* Selected states, 4 levels, filled greens */
+  .circle.selected[data-level="1"] { background: #d9fdd3; border-color: #b4e8a7; }
+  .circle.selected[data-level="2"] { background: #b4f3a4; border-color: #88d874; }
+  .circle.selected[data-level="3"] { background: #7cdd76; border-color: #4fb44c; }
+  .circle.selected[data-level="4"] { background: #3a9c46; border-color: #287135; }
+  /* ACTIVE (selected) circle */
+  .circle.active {
+    background: #007aff;
+    border-color: #007aff;
+  }
+  /* EDITABLE STATE (newest session) */
+  .progress-record.editable .circle {
+    cursor: pointer;
+  }
+  .progress-record.editable .circle:hover {
+    border-color: #007aff;
+  }
+  
+  /* READ-ONLY MODE */
+  .progress-record.readonly .circle {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  /* PROGRESS META */
+  .progress-meta { 
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #555;
+    padding-top: 4px;
+    border-top: 1px solid #ddd; 
+  }
+  
+  .progress-body {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .attachments-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.15s ease;
+  }
+
+  .attachments-indicator:hover {
+    opacity: 1;
+  }
+
+  .attachments-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .attachments-count {
+    font-size: 12px;
+    color: #444;
+  }
+
+  .attachments-indicator.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
@@ -373,31 +503,16 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   <!-- TOP BAR -->
   <div class="top-bar">
     <div class="top-row">
-      <!-- <div class="player-name" id="playerNameDisplay">Player 1</div> -->
       <div class="player-controls">
-        <!-- <button onclick="showTeamSelect()">Teams</button> -->
         <button onclick="toggleAllPlayers()">All Players</button>
-        <button onclick="addPlayer()">+</button>
+        <!-- <button onclick="addPlayer()">+</button>
         <button onclick="deletePlayer()" style="font-size: 1.5rem;">🗑</button>
         <button onclick="exportCSV()">CSV</button>
-        <button onclick="exportPDF()">PDF</button>
+        <button onclick="exportPDF()">PDF</button> -->
         <button onclick="toggleTeamSummary()">Summary</button>
 
       </div>
     </div>
-
-    <div class="summary-bar-container">
-      <div class="summary-progress-outer">
-        <div class="summary-progress-inner" id="summaryProgress"></div>
-      </div>
-      <div class="summary-text">
-        <span id="summaryScore">Score: 0</span>
-        <span id="summaryAvg">Avg: 0.0</span>
-        <span id="summaryCompletion">0%</span>
-      </div>
-    </div>
-    <div class="player-name" id="playerNameDisplay">Player 1</div>
-
   </div>
 
   <!-- ALL PLAYERS VIEW -->
@@ -435,7 +550,29 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
   <!-- PLAYER CARD -->
   <div class="swipe-container" id="swipeArea">
+    
     <div class="card" id="playerCard">
+      <!-- PLAYER NAVIGATION BAR -->
+      <div id="playerNavBar">
+        <button class="nav-arrow" id="navPrevPlayer">‹</button>
+
+        <div id="navPlayerTitle">
+          <span id="navPlayerText">Player 1 of 1</span>
+        </div>
+
+        <button class="nav-arrow" id="navNextPlayer">›</button>
+      </div>
+      <div class="player-name" id="playerNameDisplay">Player 1</div>
+      <div class="summary-bar-container">
+        <div class="summary-progress-outer">
+          <div class="summary-progress-inner" id="summaryProgress"></div>
+        </div>
+        <div class="summary-text">
+          <span id="summaryScore">Score: 0</span>
+          <span id="summaryAvg">Avg: 0.0</span>
+          <span id="summaryCompletion">0%</span>
+        </div>
+      </div>
       <!-- PROFILE + NAME + THROWS -->
       <div class="profile-row">
   
@@ -471,101 +608,141 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       </div>
 
       <!-- RATINGS -->
-      <div class="section-title">Hitting</div>
-      <div class="rating-group-grid">
-        <div class="rating-item">
-          <div class="rating-label">Swing</div>
-          <div class="rating-circles" data-field="swing">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
-          </div>
-        </div>
+      <div class="category-card" id="card-hitting">
+        <div class="section-title">Hitting</div>
+        <!-- SWIPABLE RECORD CONTAINER -->
+        <div class="progress-panel swipe-zone" id="progress-hitting">
+          <!-- ONE unified record UI (rendered dynamically) -->
+          <div class="progress-record" id="hittingRecord">
+            <!-- Rating circles (same UI for all sessions) -->
+            <div class="rating-group-grid">
+              <div class="rating-item">
+                <div class="rating-label">Swing</div>
+                <div class="rating-circles" data-field="swing">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
 
-        <div class="rating-item">
-          <div class="rating-label">Contact</div>
-          <div class="rating-circles" data-field="contact">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
-          </div>
-        </div>
+              <div class="rating-item">
+                <div class="rating-label">Contact</div>
+                <div class="rating-circles" data-field="contact">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
 
-        <div class="rating-item">
-          <div class="rating-label">Power</div>
-          <div class="rating-circles" data-field="power">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
+              <div class="rating-item">
+                <div class="rating-label">Power</div>
+                <div class="rating-circles" data-field="power">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Meta info for this session -->
+            <div class="progress-meta">
+              <span id="hittingRecordIndex">Session 1 of 1</span>
+              <span id="hittingRecordDate">Jan 22, 2026</span>
+              <div class="attachments-indicator" id="hittingAttachments"></div>
+            </div>
+          </div> <!-- end progress-record -->
+        </div> <!-- end progress-panel -->
+      </div> <!-- end category-card -->
+
+      <div class="category-card" id="card-fielding">
+
+        <div class="section-title">Fielding</div>
+        <div class="progress-panel" id="progress-fielding">
+          <div class="progress-record" id="fieldingRecord">
+            <div class="rating-group-grid">
+              <div class="rating-item">
+                <div class="rating-label">Glove</div>
+                <div class="rating-circles" data-field="glove">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
+
+              <div class="rating-item">
+                <div class="rating-label">Arm</div>
+                <div class="rating-circles" data-field="arm">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
+
+              <div class="rating-item">
+                <div class="rating-label">Footwork</div>
+                <div class="rating-circles" data-field="footwork">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
+            </div>
+            <div class="progress-meta">
+              <span id="fieldingRecordIndex">Session 1 of 1</span>
+              <span id="fieldingRecordDate">Jan 22, 2026</span>
+              <div class="attachments-indicator" id="fieldingAttachments"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="section-title">Fielding</div>
-      <div class="rating-group-grid">
-        <div class="rating-item">
-          <div class="rating-label">Glove</div>
-          <div class="rating-circles" data-field="glove">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
-          </div>
-        </div>
+      <div class="category-card" id="card-intangibles">
 
-        <div class="rating-item">
-          <div class="rating-label">Arm</div>
-          <div class="rating-circles" data-field="arm">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
-          </div>
-        </div>
+        <div class="section-title">Speed & Intangibles</div>
+        <div class="progress-panel" id="progress-intangibles">
+          <div class="progress-record" id="intangiblesRecord">
+            <div class="rating-group-grid">
+              <div class="rating-item">
+                <div class="rating-label">Speed</div>
+                <div class="rating-circles" data-field="speed">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
 
-        <div class="rating-item">
-          <div class="rating-label">Footwork</div>
-          <div class="rating-circles" data-field="footwork">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
-          </div>
-        </div>
-      </div>
+              <div class="rating-item">
+                <div class="rating-label">Hustle</div>
+                <div class="rating-circles" data-field="hustle">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
 
-      <div class="section-title">Speed & Intangibles</div>
-      <div class="rating-group-grid">
-        <div class="rating-item">
-          <div class="rating-label">Speed</div>
-          <div class="rating-circles" data-field="speed">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
-          </div>
-        </div>
+              <div class="rating-item">
+                <div class="rating-label">Coachability</div>
+                <div class="rating-circles" data-field="coachability">
+                  <div class="circle" data-level="1"></div>
+                  <div class="circle" data-level="2"></div>
+                  <div class="circle" data-level="3"></div>
+                  <div class="circle" data-level="4"></div>
+                </div>
+              </div>
+            </div>
 
-        <div class="rating-item">
-          <div class="rating-label">Hustle</div>
-          <div class="rating-circles" data-field="hustle">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
-          </div>
-        </div>
-
-        <div class="rating-item">
-          <div class="rating-label">Coachability</div>
-          <div class="rating-circles" data-field="coachability">
-            <div class="circle" data-level="1"></div>
-            <div class="circle" data-level="2"></div>
-            <div class="circle" data-level="3"></div>
-            <div class="circle" data-level="4"></div>
+            <div class="progress-meta">
+              <span id="intangiblesRecordIndex">Session 1 of 1</span>
+              <span id="intangiblesRecordDate">Jan 22, 2026</span>
+              <div class="attachments-indicator" id="intangiblesAttachments"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -579,6 +756,12 @@ let currentTeamKey = null;
 let players = [];
 let current = 0;
 let sortState = { column: null, direction: 1 };
+let sortedPlayerOrder = [];
+let progressState = {
+  hitting: { index: 0 },
+  fielding: { index: 0 },
+  intangibles: { index: 0 }
+};
 
 function toggleTeamSummary() {
   const summary = document.getElementById("teamSummaryView");
@@ -587,11 +770,10 @@ function toggleTeamSummary() {
 
   if (summary.style.display === "none" || summary.style.display === "") {
     buildTeamSummary();
+    hideAllViews();
     summary.style.display = "block";
-    card.style.display = "none";
-    list.style.display = "none";
   } else {
-    summary.style.display = "none";
+    hideAllViews();
     card.style.display = "block";
   }
 }
@@ -757,9 +939,8 @@ function selectTeam(key) {
 
   loadPlayer();
   buildPlayersTable();
+  hideAllViews();
   document.getElementById("allPlayersView").style.display = "block";
-  document.getElementById("playerCard").style.display = "none";
-  document.getElementById("teamSummaryView").style.display = "none";
 }
 
 function showTeamSelect() {
@@ -853,10 +1034,10 @@ function updateSummary() {
   });
 
   const avg = count ? sum / count : 0;
-  const percent = fields.length ? (count / fields.length) * 100 : 0;
+  const percent = (sum/36*100).toFixed(2);
 
   document.getElementById("summaryScore").textContent = "Score: " + sum;
-  document.getElementById("summaryAvg").textContent = "Avg: " + avg.toFixed(1);
+  document.getElementById("summaryAvg").textContent = "Category Avg: " + avg.toFixed(1);
   document.getElementById("summaryCompletion").textContent = Math.round(percent) + "%";
   document.getElementById("summaryProgress").style.width = percent + "%";
 }
@@ -864,6 +1045,14 @@ function updateSummary() {
 /* LOAD PLAYER */
 function loadPlayer() {
   const p = players[current] || {};
+  if (!p.progress) {
+    p.progress = defaultProgressFor(p);
+    save(); // persist upgrade
+    progressState.hitting.index = 0;
+    progressState.fielding.index = 0;
+    progressState.intangibles.index = 0;
+  }
+
   document.getElementById("playerNameDisplay").textContent = p.name || `Player ${current + 1}`;
 
   // Text inputs / textarea
@@ -901,6 +1090,16 @@ function loadPlayer() {
   }
 
   updateSummary();
+
+  // Re-Initialize Progress Panel
+  progressState.hitting.index = 0;
+  progressState.fielding.index = 0;
+  progressState.intangibles.index = 0;
+
+  renderProgressPanel("hitting");
+  renderProgressPanel("fielding");
+  renderProgressPanel("intangibles");
+
 }
 
 /* ADD PLAYER */
@@ -965,20 +1164,68 @@ document.addEventListener("click", e => {
 });
 
 /* SWIPE NAVIGATION */
-let startX = 0;
-const swipeArea = document.getElementById("swipeArea");
-
-swipeArea.addEventListener("touchstart", e => {
-  startX = e.touches[0].clientX;
+document.getElementById("navPrevPlayer").addEventListener("click", () => {
+  changePlayer(-1);
 });
 
-swipeArea.addEventListener("touchend", e => {
-  const diff = e.changedTouches[0].clientX - startX;
-  if (Math.abs(diff) < 50) return;
-  if (diff < 0 && current < players.length - 1) current++;
-  else if (diff > 0 && current > 0) current--;
+document.getElementById("navNextPlayer").addEventListener("click", () => {
+  changePlayer(1);
+});
+
+document.getElementById("navPlayerTitle").addEventListener("click", () => {
+  openAllPlayersSelector();
+});
+
+function changePlayer(direction) {
+  const currentSortedIndex = sortedPlayerOrder.indexOf(current);
+  const newSortedIndex = currentSortedIndex + direction;
+
+  if (newSortedIndex < 0 || newSortedIndex >= sortedPlayerOrder.length) return;
+
+  current = sortedPlayerOrder[newSortedIndex];
   loadPlayer();
-});
+  updateNavBar();
+}
+
+function updateNavBar() {
+  const sortedIndex = sortedPlayerOrder.indexOf(current);
+  const title = document.getElementById("navPlayerText");
+
+  title.textContent = `Player ${sortedIndex + 1} of ${sortedPlayerOrder.length}`;
+
+  document.getElementById("navPrevPlayer").disabled = sortedIndex === 0;
+  document.getElementById("navNextPlayer").disabled = sortedIndex === sortedPlayerOrder.length - 1;
+}
+
+function openAllPlayersSelector() {
+  // Build the table fresh
+  buildPlayersTable();
+  hideAllViews();
+  document.getElementById("allPlayersView").style.display = "block";
+  // Highlight the current player
+  highlightCurrentPlayerInList();
+}
+
+function highlightCurrentPlayerInList() {
+  const rows = document.querySelectorAll("#playersTableBody tr");
+
+  rows.forEach((row, index) => {
+    if (index === current) {
+      row.style.background = "#d0e7ff";
+      row.style.fontWeight = "600";
+    } else {
+      row.style.background = "";
+      row.style.fontWeight = "";
+    }
+  });
+}
+
+function hideAllViews() {
+  document.getElementById("playerCard").style.display = "none";
+  document.getElementById("allPlayersView").style.display = "none";
+  const summary = document.getElementById("teamSummaryView");
+  if (summary) summary.style.display = "none";
+}
 
 /* ALL PLAYERS VIEW */
 function toggleAllPlayers() {
@@ -987,10 +1234,10 @@ function toggleAllPlayers() {
 
   if (list.style.display === "none" || list.style.display === "") {
     buildPlayersTable();
+    hideAllViews();
     list.style.display = "block";
-    card.style.display = "none";
   } else {
-    list.style.display = "none";
+    hideAllViews();
     card.style.display = "block";
   }
 }
@@ -1051,20 +1298,21 @@ function buildPlayersTable() {
       percent
     };
   });
-
+  
   // Apply sorting
   if (sortState.column) {
     rows.sort((a, b) => {
       const col = sortState.column;
       const dir = sortState.direction;
-
+      
       if (typeof a[col] === "string") {
         return a[col].localeCompare(b[col]) * dir;
       }
       return (a[col] - b[col]) * dir;
     });
   }
-
+  sortedPlayerOrder = rows.map(r => r.index);
+  
   // Render rows
   rows.forEach(r => {
     const tr = document.createElement("tr");
@@ -1080,9 +1328,10 @@ function buildPlayersTable() {
 
     tr.addEventListener("click", () => {
       current = r.index;
-      document.getElementById("allPlayersView").style.display = "none";
-      document.getElementById("playerCard").style.display = "block";
+      updateNavBar();
       loadPlayer();
+      hideAllViews();
+      document.getElementById("playerCard").style.display = "block";
     });
 
     tbody.appendChild(tr);
@@ -1252,6 +1501,258 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
+function initProgressSwipeListeners() {
+  setupSwipe("hitting");
+  setupSwipe("fielding");
+  setupSwipe("intangibles");
+}
+
+function defaultProgressFor(player) {
+  return {
+    hitting: [
+      {
+        date: new Date().toISOString().split("T")[0],
+        swing: player.swing ?? 1,
+        contact: player.contact ?? 1,
+        power: player.power ?? 1,
+        media: { attachments: [] }
+      }
+    ],
+    fielding: [
+      {
+        date: new Date().toISOString().split("T")[0],
+        glove: player.glove ?? 1,
+        arm: player.arm ?? 1,
+        footwork: player.footwork ?? 1,
+        media: { attachments: [] }
+      }
+    ],
+    intangibles: [
+      {
+        date: new Date().toISOString().split("T")[0],
+        speed: player.speed ?? 1,
+        hustle: player.hustle ?? 1,
+        coachability: player.coachability ?? 1,
+        media: { attachments: [] }
+      }
+    ]
+  };
+}
+
+function setupSwipe(category) {
+  const panel = document.getElementById(`progress-${category}`);
+
+  let startX = 0;
+  let endX = 0;
+  let didMove = false;
+
+  panel.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    didMove = false;
+  });
+
+  panel.addEventListener("touchmove", e => {
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
+    
+    endX = x;
+    
+    const dx = Math.abs(x - startX);
+    const dy = Math.abs(y - startY);
+    
+    // Only count as movement if horizontal movement is intentional
+    if (dx > 25 && dx > dy) {
+      didMove = true;
+    }
+  });
+  
+  panel.addEventListener("touchend", e => {
+    if (!didMove) return;
+
+    const delta = endX - startX;
+    if (Math.abs(delta) < 60) return;
+
+    if (delta < 0) {
+      handleSwipeLeft(category);
+    } else {
+      handleSwipeRight(category);
+    }
+  });
+
+  function handleSwipeLeft(category) {
+    const state = progressState[category];
+    const records = players[current].progress[category];
+
+    if (state.index === 0) {
+      createNewProgressRecord(category);
+    } else {
+      state.index--;
+    }
+
+    animateSwipe(category, "left");
+    renderProgressPanel(category);
+  }
+
+  function handleSwipeRight(category) {
+    const state = progressState[category];
+    const records = players[current].progress[category];
+
+    if (state.index < records.length - 1) {
+      state.index++;
+      animateSwipe(category, "right");
+      renderProgressPanel(category);
+    }
+  }
+}
+
+function animateSwipe(category, direction) {
+  const panel = document.getElementById(`progress-${category}`);
+  panel.classList.add(`swipe-${direction}`);
+
+  setTimeout(() => {
+    panel.classList.remove(`swipe-${direction}`);
+  }, 150);
+}
+
+function createNewProgressRecord(category) {
+  const player = players[current];
+  const records = player.progress[category];
+
+  const latest = records[0];
+
+  const newRecord = {
+    date: new Date().toISOString().split("T")[0],
+    ...latest,
+    media: { attachments: [] }
+  };
+
+  records.unshift(newRecord);
+  progressState[category].index = 0;
+
+  save();
+}
+
+function renderProgressPanel(category) {
+  const player = players[current];
+  const records = player.progress[category];
+  const index = progressState[category].index;
+  const record = records[index];
+
+  const recordEl = document.getElementById(`${category}Record`);
+
+  //
+  // 1. EDITABLE vs READONLY
+  //
+  if (index === 0) {
+    recordEl.classList.add("editable");
+    recordEl.classList.remove("readonly");
+  } else {
+    recordEl.classList.add("readonly");
+    recordEl.classList.remove("editable");
+  }
+
+  //
+  // 2. UPDATE META LABELS
+  //
+  const visualNumber = records.length - index;
+  document.getElementById(`${category}RecordIndex`).textContent =
+    `Session ${visualNumber} of ${records.length}`;
+
+  document.getElementById(`${category}RecordDate`).textContent =
+    formatDate(record.date);
+
+  renderAttachments(category, record);
+}
+
+function renderAttachments(category, record) {
+  if (!record.media) record.media = { attachments: [] };
+  if (!record.media.attachments) record.media.attachments = [];
+  
+  const container = document.getElementById(`${category}Attachments`);
+  container.innerHTML = "";
+
+  const isEditable = progressState[category].index === 0;
+  const count = record.media.attachments.length;
+
+  const icon = document.createElement("img");
+  icon.src = "icons/paperclip.svg";
+  icon.className = "attachments-icon";
+
+  const countEl = document.createElement("span");
+  countEl.className = "attachments-count";
+
+  if (count > 0) {
+    countEl.textContent = count;
+  } else if (isEditable) {
+    countEl.textContent = "+";
+  } else {
+    container.classList.add("disabled");
+  }
+
+  container.appendChild(icon);
+  container.appendChild(countEl);
+
+  container.onclick = () => {
+    if (isEditable) openAttachmentPicker(category);
+    else openAttachmentViewer(record.media.attachments);
+  };
+}
+
+function openAttachmentPicker(category) {
+  console.log("Add attachment to", category);
+  // open camera or file picker
+}
+
+function openAttachmentViewer(attachments) {
+  console.log("View attachments:", attachments);
+  // open modal/gallery
+}
+
+function initCircleListeners() {
+  const allCircles = document.querySelectorAll(".rating-circles .circle");
+
+  allCircles.forEach(circle => {
+    circle.addEventListener("click", () => {
+      const field = circle.parentElement.dataset.field;
+      const level = Number(circle.dataset.level);
+
+      // Only update if newest session
+      const category = getCategoryFromElement(circle);
+      const index = progressState[category].index;
+      if (index !== 0) return;
+
+      const player = players[current];
+      const record = player.progress[category][0];
+
+      record[field] = level;
+
+      save();
+      //updateAllPlayersView();
+      renderProgressPanel(category);
+    });
+  });
+}
+function getCategoryFromElement(el) {
+  const recordEl = el.closest(".progress-record");
+  if (recordEl.id.includes("hitting")) return "hitting";
+  if (recordEl.id.includes("fielding")) return "fielding";
+  if (recordEl.id.includes("intangibles")) return "intangibles";
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 /* PROFILE PHOTO HANDLING */
 document.getElementById("profilePicWrapper").addEventListener("click", () => {
   document.getElementById("photoInput").click();
@@ -1301,6 +1802,9 @@ document.getElementById("photoInput").addEventListener("change", function () {
 
 /* INITIALIZE */
 renderTeamList();
+initCircleListeners();
+initProgressSwipeListeners();
+
 function seedTeam(teamName) {
   const names = [
     "ILeiana Aguilar",

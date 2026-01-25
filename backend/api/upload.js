@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       },
       media: {
         mimeType: fileInfo.mimeType,
-        body: fileBuffer
+        body: Readable.from(fileBuffer)
       },
       fields: "id"
     });

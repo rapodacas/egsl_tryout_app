@@ -1,0 +1,8 @@
+{
+  "name": "beastmode-backend",
+  "version": "1.0.0",
+  "dependencies": {
+    "googleapis": "^131.0.0",
+    "busboy": "^1.6.0"
+  }
+}

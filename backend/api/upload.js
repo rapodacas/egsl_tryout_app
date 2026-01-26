@@ -7,6 +7,7 @@ const supabase_pw = '5kegw07tjzrOc28g';
 
 const Busboy = require("busboy");
 const { createClient } = require("@supabase/supabase-js");
+const { supabase } = require("../lib/supabase");
 const { withCors } = require("./_cors");
 
 export const config = {
@@ -58,10 +59,10 @@ module.exports = withCors(async function handler(req, res) {
   }
 
   // Initialize Supabase client
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
+//   const supabase = createClient(
+//     process.env.SUPABASE_URL,
+//     process.env.SUPABASE_SERVICE_ROLE_KEY
+//   );
 
   // Build predictable folder structure
   const folderPath = `${fields.playerId}/${fields.sessionId}/${fields.category}`;

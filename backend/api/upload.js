@@ -14,11 +14,7 @@ export const config = {
   }
 };
 
-module.exports = async function handler(req, res) {
-  // CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+module.exports = withCors(async function handler(req, res) {
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -51,12 +47,18 @@ module.exports = async function handler(req, res) {
     req.pipe(busboy);
   });
 
+  // Required fields
   if (!fileBuffer) {
     return res.status(400).json({ error: "Missing file" });
   }
-
   if (!fields.playerId) {
     return res.status(400).json({ error: "Missing playerId" });
+  }
+  if (!fields.sessionId) {
+    return res.status(400).json({ error: "Missing sessionId" });
+  }
+  if (!fields.category) {
+    return res.status(400).json({ error: "Missing category" });
   }
 
   // Initialize Supabase client
@@ -65,12 +67,14 @@ module.exports = async function handler(req, res) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // Organize files by player
-  const path = `${fields.playerId}/${Date.now()}-${filename}`;
+  // Build predictable folder structure
+  const folderPath = `${fields.playerId}/${fields.sessionId}/${fields.category}`;
+  const fullPath = `${folderPath}/${filename}`;
 
+  // Upload to Supabase
   const { data, error } = await supabase.storage
     .from("media")
-    .upload(path, fileBuffer, {
+    .upload(fullPath, fileBuffer, {
       contentType: fields.mimeType || "application/octet-stream",
       upsert: false
     });
@@ -80,11 +84,12 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: "Upload failed" });
   }
 
-  // If your bucket is public, this URL works immediately
-  const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/media/${path}`;
+  // Build public URL
+  const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/media/${fullPath}`;
 
   return res.status(200).json({
-    path,
+    path: fullPath,
     publicUrl
   });
-};
+});
+

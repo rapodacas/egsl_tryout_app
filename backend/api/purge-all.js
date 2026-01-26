@@ -1,6 +1,6 @@
 const { createClient } = require("@supabase/supabase-js");
 
-module.exports = async function handler(req, res) {
+module.exports = withCors(async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
@@ -36,4 +36,4 @@ module.exports = async function handler(req, res) {
   }
 
   return res.status(200).json({ deleted: allPaths });
-};
+});

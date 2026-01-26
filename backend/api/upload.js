@@ -7,6 +7,7 @@ const supabase_pw = '5kegw07tjzrOc28g';
 
 const Busboy = require("busboy");
 const { createClient } = require("@supabase/supabase-js");
+const { withCors } = require("./_cors");
 
 export const config = {
   api: {

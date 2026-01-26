@@ -1,4 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
+const { withCors } = require("./_cors");
 
 module.exports = withCors(async function handler(req, res) {
   if (req.method !== "POST") {

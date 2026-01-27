@@ -8,9 +8,13 @@ module.exports = withCors(async function handler(req, res) {
   }
 
   let players;
+
   try {
-    players = JSON.parse(req.body);
+    // If req.body is already an object, use it.
+    // If it's a string, parse it.
+    players = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
   } catch (err) {
+    console.error("JSON parse error:", err);
     return res.status(400).json({ error: "Invalid JSON" });
   }
 

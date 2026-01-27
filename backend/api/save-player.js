@@ -9,7 +9,7 @@ module.exports = withCors(async function handler(req, res) {
 
   let player;
   try {
-    player = JSON.parse(req.body);
+    player = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
   } catch (err) {
     return res.status(400).json({ error: "Invalid JSON" });
   }

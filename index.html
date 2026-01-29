@@ -450,11 +450,141 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     pointer-events: none;
   }
 
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+
+  .modal.hidden {
+    display: none;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    max-width: 420px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .attachment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 90px);
+    gap: 8px;
+  }
+
+  .attachment-thumb {
+    width: 90px;
+    height: 90px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .thumb-img, .thumb-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .attachment-viewer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .attachment-viewer-content {
+    background: #fff;
+    width: 90%;
+    max-width: 480px;
+    max-height: 90%;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .attachment-viewer-content img,
+  .attachment-viewer-content video {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .attachment-viewer-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+
+  .attachment-viewer-buttons button {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+
+  #geminiResultBox {
+    background: #f3f3f3;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .gemini-batch-btn {
+    background: #5c6bc0;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    margin-left: 8px;
+    font-size: 14px;
+  }
+
+  .attachment-thumb {
+    position: relative;
+  }
+
+  .gemini-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4caf50; /* green */
+    border: 2px solid white;
+  }
+
+  .gemini-badge.pending {
+    background: #ccc;
+  }
+
+  .gemini-badge.error {
+    background: #e53935;
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  
-</head>
 
+</head>
 <body>
 
 <!-- TEAM SELECTION SCREEN -->
@@ -470,7 +600,6 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     <button onclick="triggerCSVImport()">Import Team CSV</button>
     <input type="file" id="teamCSVInput" accept=".csv" style="display:none">
   </div>
-
 </div>
 
 <!-- MAIN APP -->
@@ -486,7 +615,6 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
         <button onclick="exportCSV()">CSV</button>
         <button onclick="exportPDF()">PDF</button> -->
         <button onclick="toggleTeamSummary()">Summary</button>
-
       </div>
     </div>
   </div>
@@ -495,18 +623,18 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   <div id="allPlayersView">
     <h2>All Players</h2>
     <table class="players-table" id="playersTable">
-        <thead> 
-            <tr> 
-                <th>#</th>
-                <th>Name</th>
-                <th>🦯💥</th>
-                <th>🥎</th>
-                <th>🏃</th>
-                <th>Overall</th>
-                <th>%</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>🦯💥</th>
+          <th>🥎</th>
+          <th>🏃</th>
+          <th>Overall</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody id="playersTableBody"></tbody>
     </table>
   </div>
 
@@ -526,19 +654,18 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
   <!-- PLAYER CARD -->
   <div class="swipe-container" id="swipeArea">
-    
     <div class="card" id="playerCard">
       <!-- PLAYER NAVIGATION BAR -->
       <div id="playerNavBar">
         <button class="nav-arrow" id="navPrevPlayer">‹</button>
-
         <div id="navPlayerTitle">
           <span id="navPlayerText">Player 1 of 1</span>
         </div>
-
         <button class="nav-arrow" id="navNextPlayer">›</button>
       </div>
+
       <div class="player-name" id="playerNameDisplay">Player 1</div>
+
       <div class="summary-bar-container">
         <div class="summary-progress-outer">
           <div class="summary-progress-inner" id="summaryProgress"></div>
@@ -549,9 +676,9 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
           <span id="summaryCompletion">0%</span>
         </div>
       </div>
+
       <!-- PROFILE + NAME + THROWS -->
       <div class="profile-row">
-  
         <!-- Profile Photo -->
         <div class="profile-pic-wrapper" id="profilePicWrapper">
           <img id="profilePic" src="" alt="">
@@ -575,10 +702,8 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
             </div>
           </div>
         </div>
-
       </div>
 
-      <!-- <div class="section-title">Notes</div> -->
       <div class="field">
         <textarea data-field="notes" placeholder="Strengths, weaknesses, recommended positions..."></textarea>
       </div>
@@ -586,30 +711,23 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       <!-- RATINGS -->
       <div class="category-card" id="card-hitting">
         <div class="section-title">Hitting</div>
-        <!-- SWIPABLE RECORD CONTAINER -->
         <div class="progress-panel swipe-zone" id="progress-hitting">
-          <!-- ONE unified record UI (rendered dynamically) -->
           <div class="progress-record" id="hittingRecord">
-            <!-- Rating circles (same UI for all sessions) -->
-            <div class="rating-group-grid">
-            </div>
-            <!-- Meta info for this session -->
+            <div class="rating-group-grid"></div>
             <div class="progress-meta">
               <span id="hittingRecordIndex">Session 1 of 1</span>
               <span id="hittingRecordDate">Jan 22, 2026</span>
               <div class="attachments-indicator" id="hittingAttachments"></div>
             </div>
-          </div> <!-- end progress-record -->
-        </div> <!-- end progress-panel -->
-      </div> <!-- end category-card -->
+          </div>
+        </div>
+      </div>
 
       <div class="category-card" id="card-fielding">
-
         <div class="section-title">Fielding</div>
         <div class="progress-panel" id="progress-fielding">
           <div class="progress-record" id="fieldingRecord">
-            <div class="rating-group-grid">
-            </div>
+            <div class="rating-group-grid"></div>
             <div class="progress-meta">
               <span id="fieldingRecordIndex">Session 1 of 1</span>
               <span id="fieldingRecordDate">Jan 22, 2026</span>
@@ -620,13 +738,10 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       </div>
 
       <div class="category-card" id="card-intangibles">
-
         <div class="section-title">Speed & Intangibles</div>
         <div class="progress-panel" id="progress-intangibles">
           <div class="progress-record" id="intangiblesRecord">
-            <div class="rating-group-grid">
-            </div>
-
+            <div class="rating-group-grid"></div>
             <div class="progress-meta">
               <span id="intangiblesRecordIndex">Session 1 of 1</span>
               <span id="intangiblesRecordDate">Jan 22, 2026</span>
@@ -639,1358 +754,1899 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     </div>
   </div>
 </div>
-<script>
-const RATING_CONFIGS = {
-  1: {
-    hitting: [
-      { field: "swing",        label: "Swing",        max: 4, weight: 1, order: 1 },
-      { field: "contact",      label: "Contact",      max: 4, weight: 1, order: 2 },
-      { field: "power",        label: "Power",        max: 4, weight: 1, order: 3 }
-    ],
-    fielding: [
-      { field: "glove",        label: "Glove",        max: 4, weight: 1, order: 1 },
-      { field: "arm",          label: "Arm",          max: 4, weight: 1, order: 2 },
-      { field: "footwork",     label: "Footwork",     max: 4, weight: 1, order: 3 }
-    ],
-    intangibles: [
-      { field: "speed",        label: "Speed",        max: 4, weight: 1, order: 1 },
-      { field: "hustle",       label: "Hustle",       max: 4, weight: 1, order: 2 },
-      { field: "coachability", label: "Coachability", max: 4, weight: 1, order: 3 }
-    ]
+
+<div id="attachmentModal" class="modal hidden">
+  <div class="modal-content" id="attachmentModalContent"></div>
+</div>
+
+<input id="fileInput" type="file" accept="image/*,video/*" style="display:none">
+
+<div id="attachmentViewerModal" class="modal hidden attachment-viewer-modal">
+  <div class="attachment-viewer-content" id="attachmentViewerContent"></div>
+</div>
+
+<!-- 1. CONFIG & GLOBALS -->
+<script data-chunk="config-and-globals">
+  const API_BASE = "https://egsl-tryout-app.vercel.app/api";
+
+  const RATING_CONFIGS = {
+    1: {
+      hitting: [
+        { field: "swing",        label: "Swing",        max: 4, weight: 1, order: 1 },
+        { field: "contact",      label: "Contact",      max: 4, weight: 1, order: 2 },
+        { field: "power",        label: "Power",        max: 4, weight: 1, order: 3 }
+      ],
+      fielding: [
+        { field: "glove",        label: "Glove",        max: 4, weight: 1, order: 1 },
+        { field: "arm",          label: "Arm",          max: 4, weight: 1, order: 2 },
+        { field: "footwork",     label: "Footwork",     max: 4, weight: 1, order: 3 }
+      ],
+      intangibles: [
+        { field: "speed",        label: "Speed",        max: 4, weight: 1, order: 1 },
+        { field: "hustle",       label: "Hustle",       max: 4, weight: 1, order: 2 },
+        { field: "coachability", label: "Coachability", max: 4, weight: 1, order: 3 }
+      ]
+    }
+  };
+  const LATEST_CONFIG_VERSION = 1;
+
+  let currentTeamName = null;
+  let currentTeamKey = null;
+  let players = [];
+  let current = 0;
+  let sortState = { column: null, direction: 1 };
+  let sortedPlayerOrder = [];
+  let progressState = {
+    hitting: { index: 0 },
+    fielding: { index: 0 },
+    intangibles: { index: 0 }
+  };
+</script>
+
+<!-- 2. DATA STORE & BACKEND API -->
+<script data-chunk="data-store-and-api">
+  async function loadPlayers(teamId = null) {
+    const cached = localStorage.getItem("players");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        refreshPlayers(teamId);
+        return parsed;
+      } catch (e) {
+        console.warn("Bad cached players, ignoring");
+      }
+    }
+    return await refreshPlayers(teamId);
   }
-};
-const LATEST_CONFIG_VERSION = 1;
 
-/* GLOBAL STATE */
-let currentTeamKey = null;
-let players = [];
-let current = 0;
-let sortState = { column: null, direction: 1 };
-let sortedPlayerOrder = [];
-let progressState = {
-  hitting: { index: 0 },
-  fielding: { index: 0 },
-  intangibles: { index: 0 }
-};
+  async function refreshPlayers(teamId = null) {
+    const url = teamId
+      ? `${API_BASE}/load-players?teamId=${encodeURIComponent(teamId)}`
+      : `${API_BASE}/load-players`;
 
-function toggleTeamSummary() {
-  const summary = document.getElementById("teamSummaryView");
-  const card = document.getElementById("playerCard");
-  const list = document.getElementById("allPlayersView");
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error("Failed to load players");
+      return [];
+    }
 
-  if (summary.style.display === "none" || summary.style.display === "") {
-    buildTeamSummary();
-    hideAllViews();
-    summary.style.display = "block";
-  } else {
-    hideAllViews();
-    card.style.display = "block";
+    const loaded = await res.json();
+    localStorage.setItem("players", JSON.stringify(loaded));
+    return loaded;
   }
-}
 
-function buildTeamSummary() {
-  const tbody = document.querySelector("#teamSummaryTable tbody");
-  tbody.innerHTML = "";
+  async function savePlayer(player) {
+    const cached = JSON.parse(localStorage.getItem("players") || "[]");
+    const idx = cached.findIndex(p => p.id === player.id);
 
-  //
-  // 1. Build a unified list of all possible fields across all versions
-  //
-  const allItems = [];
+    if (idx >= 0) cached[idx] = player;
+    else cached.push(player);
 
-  Object.values(RATING_CONFIGS).forEach(cfg => {
-    if (!cfg) return; // defensive
+    localStorage.setItem("players", JSON.stringify(cached));
 
-    Object.keys(cfg).forEach(cat => {
-      const items = cfg[cat];
-      if (!Array.isArray(items)) return; // defensive
+    const res = await fetch(`${API_BASE}/save-player`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(player)
+    });
 
-      items.forEach(item => {
-        if (!allItems.find(x => x.field === item.field)) {
-          allItems.push({
-            field: item.field,
-            label: item.label
-          });
+    if (!res.ok) {
+      console.error("Failed to save player", await res.text());
+      return false;
+    }
+
+    return true;
+  }
+
+  async function saveAllPlayers(playersToSave) {
+    localStorage.setItem("players", JSON.stringify(playersToSave));
+
+    const res = await fetch(`${API_BASE}/save-players`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(playersToSave)
+    });
+
+    if (!res.ok) {
+      console.error("Failed to save players", await res.text());
+      return false;
+    }
+
+    return true;
+  }
+
+  async function seedTeam(teamName) {
+    const names = [
+      "ILeiana Aguilar",
+      "Jana Almasri",
+      "Juliet Apodaca",
+      "Alannah Arguello",
+      "Shealey Belardes",
+      "Alexis Berggren",
+      "Katelyn Borecky",
+      "Cambria Brosnan",
+      "Angela Calixto",
+      "Natalie Cervantes",
+      "Penelope Cuevas",
+      "Avery Dean",
+      "Alyson Eden",
+      "Adeline Esquivel",
+      "Lily Esquivel",
+      "Aryanna Fernandez",
+      "Harper Flores",
+      "Kaylee Flores",
+      "Haley Franco",
+      "Evelyn Gardino",
+      "Maddison Garcia",
+      "Cora Gottlieb",
+      "Tavyn Green",
+      "Jaedyn Kandyce Grill",
+      "Leilani Hernandez",
+      "Kara Hutchinson",
+      "Lilyana Jordan",
+      "Aria Lopez",
+      "Bella Lopez",
+      "Bianca Lopez",
+      "Noelle Marquez",
+      "Caroline McDonald",
+      "Mila Medina",
+      "Samantha Mendoza",
+      "Dryden Miyajima",
+      "Kennedy Moralez",
+      "Madison Murphy",
+      "Hannah Nack",
+      "Leiyanah Paipa",
+      "Victoria Parker",
+      "Khloe Pettit",
+      "Katalina Ponce",
+      "Cierra Prieto",
+      "Madison Pulver",
+      "Aiyana Renteria",
+      "Kaylee Rhodes",
+      "Alysse Robles",
+      "Daliah Sanchez",
+      "Savannah Springsteen",
+      "Riley Tanner",
+      "Evelyn Tellez",
+      "Isabel Torres",
+      "Noshla Turner",
+      "Uushla Turner",
+      "Ariyana Ari Tyler",
+      "Olivia Vallejos",
+      "Stella Vega",
+      "Amelia Webber",
+      "Gloria Wiebel"
+    ];
+
+    const roster = names.map(n => ({
+      id: crypto.randomUUID(),
+      teamId: teamName,
+      name: n,
+      progress: {},
+      notes: "",
+      throws: ""
+    }));
+
+    await saveAllPlayers(roster);
+    players = roster;
+    alert("Team seeded: " + teamName);
+  }
+</script>
+
+<!-- 3. NORMALIZATION & PROGRESS MODEL -->
+<script data-chunk="normalization-and-progress-model">
+  function normalizeRecord(rec, category) {
+    if (!rec.sessionId) {
+      rec.sessionId = crypto.randomUUID();
+    }
+
+    let version = rec.configVersion || 1;
+    if (!RATING_CONFIGS[version]) {
+      version = 1;
+    }
+    rec.configVersion = version;
+
+    const cfg = RATING_CONFIGS[version][category];
+    if (!cfg) return rec;
+
+    if (!rec.media || !rec.media.attachments) {
+      rec.media = { attachments: [] };
+    }
+
+    cfg.forEach(item => {
+      if (rec[item.field] == null) {
+        rec[item.field] = 1;
+      }
+    });
+
+    return rec;
+  }
+
+  function normalizePlayer(p) {
+    if (!p.id) {
+      p.id = crypto.randomUUID();
+    }
+
+    if (!p.progress) p.progress = {};
+    const cats = ["hitting", "fielding", "intangibles"];
+
+    cats.forEach(cat => {
+      if (!Array.isArray(p.progress[cat]) || p.progress[cat].length === 0) {
+        const today = new Date().toISOString().split("T")[0];
+        const version = 1;
+        const cfg = RATING_CONFIGS[version][cat];
+
+        const rec = {
+          date: today,
+          media: { attachments: [] },
+          configVersion: version
+        };
+
+        cfg.forEach(item => {
+          rec[item.field] = 1;
+        });
+
+        p.progress[cat] = [rec];
+      }
+
+      p.progress[cat] = p.progress[cat].map(rec => normalizeRecord(rec, cat));
+    });
+
+    return p;
+  }
+
+  function normalizeAllPlayers() {
+    players = players.map(p => normalizePlayer(p));
+    save();
+  }
+
+  function defaultProgressFor(player) {
+    const today = new Date().toISOString().split("T")[0];
+
+    function makeCategory(cat) {
+      const cfg = RATING_CONFIGS[LATEST_CONFIG_VERSION][cat];
+
+      const obj = {
+        date: today,
+        media: { attachments: [] },
+        configVersion: LATEST_CONFIG_VERSION
+      };
+
+      cfg.forEach(item => {
+        obj[item.field] = player[item.field] ?? 1;
+      });
+
+      return [obj];
+    }
+
+    return {
+      hitting: makeCategory("hitting"),
+      fielding: makeCategory("fielding"),
+      intangibles: makeCategory("intangibles")
+    };
+  }
+
+  function ensurePlayerProgress(p) {
+    if (!p.progress) p.progress = {};
+
+    ["hitting", "fielding", "intangibles"].forEach(cat => {
+      if (!Array.isArray(p.progress[cat]) || p.progress[cat].length === 0) {
+        const today = new Date().toISOString().split("T")[0];
+        const cfg = RATING_CONFIGS[1][cat];
+
+        const rec = {
+          date: today,
+          media: { attachments: [] },
+          configVersion: 1
+        };
+
+        cfg.forEach(item => {
+          rec[item.field] = 1;
+        });
+
+        p.progress[cat] = [rec];
+      }
+    });
+
+    return p;
+  }
+
+  function getPlayerLatestVersion(p) {
+    const cats = ["hitting", "fielding", "intangibles"];
+    let version = 1;
+
+    cats.forEach(cat => {
+      const rec = p.progress[cat][0];
+      if (rec && rec.configVersion && rec.configVersion > version) {
+        version = rec.configVersion;
+      }
+    });
+
+    return version;
+  }
+
+  function ensurePlayerIds() {
+    for (const player of players) {
+      if (!player.id) {
+        player.id = crypto.randomUUID();
+      }
+    }
+    save();
+  }
+</script>
+
+<!-- 4. TEAM MANAGEMENT & CSV -->
+<script data-chunk="team-management-and-csv">
+  function getTeamNames() {
+    const raw = localStorage.getItem("teamNames");
+    return raw ? JSON.parse(raw) : [];
+  }
+
+  function renderTeamList() {
+    const container = document.getElementById("teamList");
+    container.innerHTML = "";
+
+    const names = getTeamNames();
+    if (names.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "team-empty";
+      empty.textContent = "No teams yet. Create one below.";
+      container.appendChild(empty);
+      return;
+    }
+
+    names.forEach(name => {
+      const div = document.createElement("div");
+      div.className = "team-item";
+      div.textContent = name;
+
+      div.addEventListener("click", () => {
+        selectTeam(name);
+      });
+
+      container.appendChild(div);
+    });
+  }
+
+  async function createTeam() {
+    const input = document.getElementById("newTeamName");
+    const name = input.value.trim();
+    if (!name) return;
+
+    const names = getTeamNames();
+    if (!names.includes(name)) {
+      names.push(name);
+      localStorage.setItem("teamNames", JSON.stringify(names));
+    }
+
+    input.value = "";
+    renderTeamList();
+
+    await seedTeam(name);
+  }
+
+  async function selectTeam(teamName) {
+    currentTeamName = teamName;
+    currentTeamKey = "team_" + teamName;
+
+    players = await loadPlayers(teamName);
+    current = 0;
+
+    document.getElementById("teamSelectScreen").classList.add("hidden");
+    document.getElementById("mainApp").classList.remove("hidden");
+
+    loadPlayer();
+  }
+
+  function showTeamSelect() {
+    document.getElementById("mainApp").classList.add("hidden");
+    document.getElementById("teamSelectScreen").classList.remove("hidden");
+    renderTeamList();
+  }
+
+  function triggerCSVImport() {
+    document.getElementById("teamCSVInput").click();
+  }
+
+  document.getElementById("teamCSVInput").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      importTeamFromCSV(e.target.result, file.name);
+    };
+    reader.readAsText(file);
+  });
+
+  function importTeamFromCSV(csvText, filename) {
+    const lines = csvText.trim().split(/\r?\n/);
+    if (lines.length < 2) {
+      alert("CSV appears empty or invalid.");
+      return;
+    }
+
+    const headers = lines[0].split(",").map(h => h.trim());
+    const importedPlayers = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const raw = lines[i].trim();
+      if (!raw) continue;
+
+      const cols = raw.split(",");
+      const p = {};
+
+      headers.forEach((h, idx) => {
+        p[h] = cols[idx] ? cols[idx].trim() : "";
+      });
+
+      p.name = p.name || p.Name || "";
+      p.throws = p.throws || p.Throws || "";
+      p.notes = (p.notes && p.notes.replace(/"/g, "")) || "";
+
+      ["swing","contact","power","glove","arm","footwork","speed","hustle","coachability"]
+        .forEach(f => p[f] = Number(p[f]) || 0);
+
+      if (p.photo) p.photo = p.photo;
+
+      importedPlayers.push(p);
+    }
+
+    const teamName = filename.replace(".csv", "");
+    const key = "team_" + teamName;
+
+    localStorage.setItem(key, JSON.stringify(importedPlayers));
+
+    alert(`Imported ${importedPlayers.length} players into team: ${teamName}`);
+    renderTeamList();
+  }
+
+  function exportCSV() {
+    if (!players || players.length === 0) return;
+
+    const fields = [
+      "name","throws",
+      "swing","contact","power",
+      "glove","arm","footwork",
+      "speed","hustle","coachability",
+      "notes"
+    ];
+
+    const header = fields.join(",");
+    const rows = players.map(p => {
+      const player = p || {};
+      return fields.map(field => {
+        let value = player[field];
+
+        if (value === undefined || value === null) value = "";
+        value = String(value).replace(/"/g, '""');
+
+        if (value.includes(",") || value.includes("\n") || value.includes("\"")) {
+          value = `"${value}"`;
+        }
+
+        return value;
+      }).join(",");
+    });
+
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "team";
+    a.href = url;
+    a.download = teamName + "_players.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+</script>
+
+<!-- 5. PLAYER NAV, SUMMARY, TABLES, EXPORT -->
+<script data-chunk="player-nav-summary-tables">
+  function save() {
+    if (!players[current]) return;
+    savePlayer(players[current]);
+  }
+
+  function updateSummary() {
+    const p = players[current] || {};
+    const fields = [
+      "swing","contact","power",
+      "glove","arm","footwork",
+      "speed","hustle","coachability"
+    ];
+
+    let sum = 0, count = 0;
+    fields.forEach(f => {
+      if (p[f] >= 1 && p[f] <= 4) {
+        sum += p[f];
+        count++;
+      }
+    });
+
+    const avg = count ? sum / count : 0;
+    const percent = (sum / 36 * 100).toFixed(2);
+
+    document.getElementById("summaryScore").textContent = "Score: " + sum;
+    document.getElementById("summaryAvg").textContent = "Category Avg: " + avg.toFixed(1);
+    document.getElementById("summaryCompletion").textContent = Math.round(percent) + "%";
+    document.getElementById("summaryProgress").style.width = percent + "%";
+  }
+
+  function loadPlayer() {
+    const p = players[current] || {};
+    if (!p.progress) {
+      p.progress = defaultProgressFor(p);
+      save();
+      progressState.hitting.index = 0;
+      progressState.fielding.index = 0;
+      progressState.intangibles.index = 0;
+    }
+
+    document.getElementById("playerNameDisplay").textContent = p.name || `Player ${current + 1}`;
+
+    document.querySelectorAll("input[data-field], textarea[data-field]").forEach(el => {
+      const field = el.getAttribute("data-field");
+      el.value = p[field] || "";
+    });
+
+    document.querySelectorAll(".rating-circles").forEach(group => {
+      const field = group.getAttribute("data-field");
+      group.querySelectorAll(".circle").forEach(c => {
+        c.classList.remove("selected");
+        const level = parseInt(c.getAttribute("data-level"), 10);
+        if (p[field] === level) {
+          c.classList.add("selected");
         }
       });
     });
-  });
 
-  //
-  // 2. Compute weighted averages for any set of fields
-  //
-  function avgOf(fields) {
-    let sum = 0;
-    let weightSum = 0;
+    const throwsValue = p.throws || "";
+    document.querySelectorAll(".throws-option").forEach(opt => {
+      const val = opt.getAttribute("data-throws-value");
+      if (val === throwsValue) opt.classList.add("selected");
+      else opt.classList.remove("selected");
+    });
 
-    players.forEach(p => {
-      const latestVersion = p.progress.hitting[0].configVersion;
+    const profilePic = document.getElementById("profilePic");
+    if (p.photo) {
+      profilePic.src = p.photo;
+    } else {
+      profilePic.src = "";
+    }
+
+    updateSummary();
+
+    progressState.hitting.index = 0;
+    progressState.fielding.index = 0;
+    progressState.intangibles.index = 0;
+
+    renderProgressPanel("hitting");
+    renderProgressPanel("fielding");
+    renderProgressPanel("intangibles");
+  }
+
+  function addPlayer() {
+    players.push({});
+    current = players.length - 1;
+    save();
+    loadPlayer();
+  }
+
+  function deletePlayer() {
+    if (players.length === 1) return;
+    players.splice(current, 1);
+    current = Math.max(0, current - 1);
+    save();
+    loadPlayer();
+  }
+
+  function changePlayer(direction) {
+    const currentSortedIndex = sortedPlayerOrder.indexOf(current);
+    const newSortedIndex = currentSortedIndex + direction;
+
+    if (newSortedIndex < 0 || newSortedIndex >= sortedPlayerOrder.length) return;
+
+    current = sortedPlayerOrder[newSortedIndex];
+    loadPlayer();
+    updateNavBar();
+  }
+
+  function updateNavBar() {
+    const sortedIndex = sortedPlayerOrder.indexOf(current);
+    const title = document.getElementById("navPlayerText");
+
+    title.textContent = `Player ${sortedIndex + 1} of ${sortedPlayerOrder.length}`;
+
+    document.getElementById("navPrevPlayer").disabled = sortedIndex === 0;
+    document.getElementById("navNextPlayer").disabled = sortedIndex === sortedPlayerOrder.length - 1;
+  }
+
+  function openAllPlayersSelector() {
+    buildPlayersTable();
+    hideAllViews();
+    document.getElementById("allPlayersView").style.display = "block";
+    highlightCurrentPlayerInList();
+  }
+
+  function highlightCurrentPlayerInList() {
+    const rows = document.querySelectorAll("#playersTable tbody tr");
+
+    rows.forEach((row, index) => {
+      if (index === current) {
+        row.style.background = "#d0e7ff";
+        row.style.fontWeight = "600";
+      } else {
+        row.style.background = "";
+        row.style.fontWeight = "";
+      }
+    });
+  }
+
+  function hideAllViews() {
+    document.getElementById("playerCard").style.display = "none";
+    document.getElementById("allPlayersView").style.display = "none";
+    const summary = document.getElementById("teamSummaryView");
+    if (summary) summary.style.display = "none";
+  }
+
+  function toggleAllPlayers() {
+    const card = document.getElementById("playerCard");
+    const list = document.getElementById("allPlayersView");
+
+    if (list.style.display === "none" || list.style.display === "") {
+      buildPlayersTable();
+      hideAllViews();
+      list.style.display = "block";
+    } else {
+      hideAllViews();
+      card.style.display = "block";
+    }
+  }
+
+  function buildPlayersTable() {
+    const tbody = document.querySelector("#playersTable tbody");
+    const thead = document.querySelector("#playersTable thead");
+    tbody.innerHTML = "";
+
+    const rows = players.map((p, index) => {
+      ensurePlayerProgress(p);
+      const latestVersion = getPlayerLatestVersion(p);
       const cfg = RATING_CONFIGS[latestVersion];
 
-      fields.forEach(f => {
-        // Find this field in the player's version
-        const item = Object.values(cfg)
-          .flat()
-          .find(x => x.field === f.field);
+      function categoryStats(cat) {
+        const items = cfg[cat];
 
-        if (!item) return;
+        let sum = 0;
+        let maxSum = 0;
 
-        const val = p[f.field];
-        if (val >= 1 && val <= item.max) {
-          sum += val * item.weight;
-          weightSum += item.weight;
-        }
-      });
+        items.forEach(item => {
+          const val = p[item.field];
+          if (val >= 1 && val <= item.max) {
+            sum += val * item.weight;
+          }
+          maxSum += item.max * item.weight;
+        });
+
+        const avg = sum / items.length;
+        return { avg, sum, maxSum };
+      }
+
+      const hit = categoryStats("hitting");
+      const fld = categoryStats("fielding");
+      const intg = categoryStats("intangibles");
+
+      const overall = hit.sum + fld.sum + intg.sum;
+      const overallMax = hit.maxSum + fld.maxSum + intg.maxSum;
+      const percent = overallMax ? overall / overallMax : 0;
+
+      return {
+        index,
+        seed: index + 1,
+        name: p.name || `Player ${index + 1}`,
+        hitting: hit.avg,
+        fielding: fld.avg,
+        intangibles: intg.avg,
+        overall,
+        percent
+      };
     });
-    return weightSum ? sum / weightSum : 0;
-  }
 
-  //
-  // 3. Subcategories (sorted alphabetically)
-  //
-  const sortedSubcats = allItems.sort((a, b) =>
-    a.label.localeCompare(b.label)
-  );
+    if (sortState.column) {
+      rows.sort((a, b) => {
+        const col = sortState.column;
+        const dir = sortState.direction;
 
-  sortedSubcats.forEach(item => {
-    const avg = avgOf([item]).toFixed(2);
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${item.label}</td>
-      <td>${avg}</td>
-    `;
-    tbody.appendChild(tr);
-  });
+        if (typeof a[col] === "string") {
+          return a[col].localeCompare(b[col]) * dir;
+        }
+        return (a[col] - b[col]) * dir;
+      });
+    }
+    sortedPlayerOrder = rows.map(r => r.index);
 
-  //
-  // 4. Grouped categories (using latest config for labels)
-  //
-  const latestCfg = RATING_CONFIGS[LATEST_CONFIG_VERSION];
-
-  const groupLabels = {
-    hitting: "Hitting",
-    fielding: "Fielding",
-    intangibles: "Speed & Intangibles"
-  };
-
-  Object.keys(latestCfg)
-    .sort((a, b) => groupLabels[a].localeCompare(groupLabels[b]))
-    .forEach(cat => {
-      const items = latestCfg[cat];
-      const avg = avgOf(items).toFixed(2);
+    rows.forEach(r => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><strong>${groupLabels[cat]}</strong></td>
-        <td><strong>${avg}</strong></td>
+        <td>${r.seed}</td>
+        <td>${r.name}</td>
+        <td>${r.hitting.toFixed(1)}</td>
+        <td>${r.fielding.toFixed(1)}</td>
+        <td>${r.intangibles.toFixed(1)}</td>
+        <td>${r.overall.toFixed(1)}</td>
+        <td>${Math.round(r.percent * 100)}%</td>
+      `;
+
+      tr.addEventListener("click", () => {
+        current = r.index;
+        updateNavBar();
+        loadPlayer();
+        hideAllViews();
+        document.getElementById("playerCard").style.display = "block";
+      });
+
+      tbody.appendChild(tr);
+    });
+
+    const headers = thead.querySelectorAll("th");
+    headers.forEach((th, i) => {
+      const colMap = [
+        "seed",
+        "name",
+        "hitting",
+        "fielding",
+        "intangibles",
+        "overall",
+        "percent"
+      ];
+
+      const col = colMap[i];
+
+      th.onclick = () => {
+        if (sortState.column === col) {
+          sortState.direction *= -1;
+        } else {
+          sortState.column = col;
+          sortState.direction = 1;
+        }
+
+        headers.forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
+        th.classList.add(sortState.direction === 1 ? "sorted-asc" : "sorted-desc");
+
+        buildPlayersTable();
+      };
+    });
+  }
+
+  async function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+    const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "Team";
+    let y = 40;
+
+    doc.setFontSize(18);
+    doc.text(`${teamName} – Player Roster`, 40, y);
+    y += 30;
+
+    doc.setFontSize(12);
+
+    for (let i = 0; i < players.length; i++) {
+      const p = players[i];
+
+      doc.setFontSize(14);
+      doc.text(`${i + 1}. ${p.name || "Unnamed Player"}`, 40, y);
+      y += 20;
+      doc.setFontSize(12);
+
+      if (p.photo) {
+        try {
+          doc.addImage(p.photo, "JPEG", 40, y, 80, 80);
+        } catch (e) {
+          console.warn("Image failed to load for PDF:", e);
+        }
+      }
+
+      let infoY = y;
+      if (p.photo) infoY += 90;
+
+      doc.text(`Throws/Bats: ${p.throws || "-"}`, 140, y + 15);
+
+      const ratingFields = [
+        ["Swing", p.swing],
+        ["Contact", p.contact],
+        ["Power", p.power],
+        ["Glove", p.glove],
+        ["Arm", p.arm],
+        ["Footwork", p.footwork],
+        ["Speed", p.speed],
+        ["Hustle", p.hustle],
+        ["Coachability", p.coachability]
+      ];
+
+      let ry = infoY;
+      ratingFields.forEach(([label, val]) => {
+        doc.text(`${label}: ${val || "-"}`, 40, ry);
+        ry += 16;
+      });
+
+      if (p.notes) {
+        ry += 10;
+        doc.text("Notes:", 40, ry);
+        ry += 14;
+
+        const wrapped = doc.splitTextToSize(p.notes, 520);
+        doc.text(wrapped, 40, ry);
+        ry += wrapped.length * 14;
+      }
+
+      y = ry + 20;
+
+      if (y > 700) {
+        doc.addPage();
+        y = 40;
+      }
+    }
+
+    doc.save(`${teamName}_players.pdf`);
+  }
+
+  function toggleTeamSummary() {
+    const summary = document.getElementById("teamSummaryView");
+    const card = document.getElementById("playerCard");
+
+    if (summary.style.display === "none" || summary.style.display === "") {
+      buildTeamSummary();
+      hideAllViews();
+      summary.style.display = "block";
+    } else {
+      hideAllViews();
+      card.style.display = "block";
+    }
+  }
+
+  function buildTeamSummary() {
+    const tbody = document.querySelector("#teamSummaryTable tbody");
+    tbody.innerHTML = "";
+
+    const allItems = [];
+
+    Object.values(RATING_CONFIGS).forEach(cfg => {
+      if (!cfg) return;
+
+      Object.keys(cfg).forEach(cat => {
+        const items = cfg[cat];
+        if (!Array.isArray(items)) return;
+
+        items.forEach(item => {
+          if (!allItems.find(x => x.field === item.field)) {
+            allItems.push({
+              field: item.field,
+              label: item.label
+            });
+          }
+        });
+      });
+    });
+
+    function avgOf(fields) {
+      let sum = 0;
+      let weightSum = 0;
+
+      players.forEach(p => {
+        const latestVersion = p.progress.hitting[0].configVersion;
+        const cfg = RATING_CONFIGS[latestVersion];
+
+        fields.forEach(f => {
+          const item = Object.values(cfg)
+            .flat()
+            .find(x => x.field === f.field);
+
+          if (!item) return;
+
+          const val = p[f.field];
+          if (val >= 1 && val <= item.max) {
+            sum += val * item.weight;
+            weightSum += item.weight;
+          }
+        });
+      });
+      return weightSum ? sum / weightSum : 0;
+    }
+
+    const sortedSubcats = allItems.sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
+
+    sortedSubcats.forEach(item => {
+      const avg = avgOf([item]).toFixed(2);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.label}</td>
+        <td>${avg}</td>
       `;
       tbody.appendChild(tr);
     });
 
-  //
-  // 5. Overall team average
-  //
-  const overall = avgOf(allItems).toFixed(2);
+    const latestCfg = RATING_CONFIGS[LATEST_CONFIG_VERSION];
 
-  const trOverall = document.createElement("tr");
-  trOverall.innerHTML = `
-    <td><strong>Overall Team Average</strong></td>
-    <td><strong>${overall}</strong></td>
-  `;
-  tbody.appendChild(trOverall);
+    const groupLabels = {
+      hitting: "Hitting",
+      fielding: "Fielding",
+      intangibles: "Speed & Intangibles"
+    };
 
-  //
-  // 6. Player count
-  //
-  const trCount = document.createElement("tr");
-  trCount.innerHTML = `
-    <td><strong>Total Players</strong></td>
-    <td><strong>${players.length}</strong></td>
-  `;
-  tbody.appendChild(trCount);
-}
-
-function normalizeRecord(rec, category) {
-  // Fallback version for legacy records
-  let version = rec.configVersion || 1;
-
-  // If somehow version is unknown, fall back to 1
-  if (!RATING_CONFIGS[version]) {
-    version = 1;
-  }
-
-  rec.configVersion = version;
-
-  const cfg = RATING_CONFIGS[version][category];
-  if (!cfg) return rec; // defensive
-
-  // Ensure media exists
-  if (!rec.media || !rec.media.attachments) {
-    rec.media = { attachments: [] };
-  }
-
-  // Ensure all fields from this version exist
-  cfg.forEach(item => {
-    if (rec[item.field] == null) {
-      rec[item.field] = 1; // default
-    }
-  });
-
-  return rec;
-}
-function normalizePlayer(p) {
-  if (!p.progress) p.progress = {};
-
-  const cats = ["hitting", "fielding", "intangibles"];
-
-  cats.forEach(cat => {
-    // Ensure category array exists
-    if (!Array.isArray(p.progress[cat]) || p.progress[cat].length === 0) {
-      const today = new Date().toISOString().split("T")[0];
-      const version = 1; // legacy default
-      const cfg = RATING_CONFIGS[version][cat];
-
-      const rec = {
-        date: today,
-        media: { attachments: [] },
-        configVersion: version
-      };
-
-      cfg.forEach(item => {
-        rec[item.field] = 1;
+    Object.keys(latestCfg)
+      .sort((a, b) => groupLabels[a].localeCompare(groupLabels[b]))
+      .forEach(cat => {
+        const items = latestCfg[cat];
+        const avg = avgOf(items).toFixed(2);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${groupLabels[cat]}</strong></td>
+          <td><strong>${avg}</strong></td>
+        `;
+        tbody.appendChild(tr);
       });
 
-      p.progress[cat] = [rec];
-    }
+    const overall = avgOf(allItems).toFixed(2);
 
-    // Normalize each record in this category
-    p.progress[cat] = p.progress[cat].map(rec => normalizeRecord(rec, cat));
-  });
+    const trOverall = document.createElement("tr");
+    trOverall.innerHTML = `
+      <td><strong>Overall Team Average</strong></td>
+      <td><strong>${overall}</strong></td>
+    `;
+    tbody.appendChild(trOverall);
 
-  return p;
-}
-
-function normalizeAllPlayers() {
-  players = players.map(p => normalizePlayer(p));
-  save(); // optional, if you want to persist the normalized shape
-}
-
-/* TEAM MANAGEMENT */
-
-function getTeamKeys() {
-  const keys = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith("team_")) {
-      keys.push(k);
-    }
+    const trCount = document.createElement("tr");
+    trCount.innerHTML = `
+      <td><strong>Total Players</strong></td>
+      <td><strong>${players.length}</strong></td>
+    `;
+    tbody.appendChild(trCount);
   }
-  return keys.sort();
-}
+</script>
 
-function renderTeamList() {
-  const container = document.getElementById("teamList");
-  container.innerHTML = "";
-
-  const keys = getTeamKeys();
-  if (keys.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "team-empty";
-    empty.textContent = "No teams yet. Create one below.";
-    container.appendChild(empty);
-    return;
-  }
-
-  keys.forEach(key => {
-    const teamName = key.replace("team_", "");
-    const div = document.createElement("div");
-    div.className = "team-item";
-    const span = document.createElement("span");
-    span.textContent = teamName;
-
-    div.appendChild(span);
-    div.addEventListener("click", () => {
-      selectTeam(key);
-    });
-
-    container.appendChild(div);
-  });
-}
-
-function createTeam() {
-  const input = document.getElementById("newTeamName");
-  const name = input.value.trim();
-  if (!name) return;
-
-  const key = "team_" + name;
-  if (!localStorage.getItem(key)) {
-    localStorage.setItem(key, JSON.stringify([{}]));
-  }
-  input.value = "";
-  renderTeamList();
-  seedTeam(name);
-}
-
-function selectTeam(key) {
-  currentTeamKey = key;
-  const data = localStorage.getItem(currentTeamKey);
-  players = data ? JSON.parse(data) : [{}];
-  if (!Array.isArray(players) || players.length === 0) {
-    players = [{}];
-  }
-  current = 0;
-
-  document.getElementById("teamSelectScreen").classList.add("hidden");
-  document.getElementById("mainApp").classList.remove("hidden");
-
-  loadPlayer();
-  buildPlayersTable();
-  hideAllViews();
-  document.getElementById("allPlayersView").style.display = "block";
-}
-
-function showTeamSelect() {
-  document.getElementById("mainApp").classList.add("hidden");
-  document.getElementById("teamSelectScreen").classList.remove("hidden");
-  renderTeamList();
-}
-
-function triggerCSVImport() {
-  document.getElementById("teamCSVInput").click();
-}
-document.getElementById("teamCSVInput").addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    importTeamFromCSV(e.target.result, file.name);
+<!-- 6. MEDIA, ATTACHMENTS, PURGE -->
+<script data-chunk="media-and-attachments">
+  // NOTE: in production this should live server-side, not in client JS.
+  const SERVICE_ACCOUNT = {
+    client_email: "beast-mode-drive-service@beast-mode-media-backend.iam.gserviceaccount.com",
+    private_key: `-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgzb+YhEXI/Nu3\nxihRSfSyV53KwXF46XZ/rpCwJ9MvCrOKCtQ0gSIUq03hbhBoTxX8PboDzSmfVr9I\nhmkf9X38WLHRAkbv93SaXZKmnWM0dsPUjaIpOw4jUYu0prVXtDy6Ee32M74wjBhu\nR1APsQyLiGRvOsT+63Hzdw/783wMRgD3glKGmhCOZVa81pbtYeyY9k9ZmIPYLatK\n6y6PhdH6S2HkR2Ig6H3ihz4JtpPCRQwbX9d2xF6pIAsDxQRvTotxWNV8DHeDzRas\nzw1GTY+TzKWg/sr2IymZUcvL/P8dUaVF+BhgH3BMQaiq4d1SDYBglM0dFvnF40/z\nburwZlfhAgMBAAECggEAB1SsMfeBLvDIG34alZNC+WQhKJDeNN5bP8HAsbl163/z\nZI0YHck4uWI3AmzJP9gdbwqyf2FL4VNwgh/p+ma4raCupf/JbvaWdWaIYUeR1oNQ\nIr8X8AVBfAfaPcLz2gZK6LirYxiMyIk6e+WxhPfmL15EuCn8StGr3IJrCiEiqb2l\nzg6bzZxxHs4jG3kDfC0+33I6r213aVdFbR047pAzx7K7T/XoxmXWcQJj1tAaxUpJ\nZW7MF8hl5l11VRSCboOt18nUiw6ZeZ4o6IstAvlMe5egjQN78ZvF4TlAeSP5WA6Q\nXQ98Vv4cbwBaACgjchyaai44y+/HC2SDN8xCCa3N2QKBgQDghNSFlGOXP4XS38w6\nmjnstiLddwVO05iEgGiExgaJJo4bPcN7GHVefNyH7CUJqwvGsupLjRS/b7MIABv3\nLcHuUDXe7GyGW+yZIAzalGViShOA5U56IDEsmwcadLKj28j8abO/UbK77JpOKuA1\n+SNjwOBUWmhJWAFZ12ijdNnYawKBgQC3WdgRLlFQ57lU92V4mLfb7/ONjcJVwOgz\nEnQ9ZxVfs3pt2+bqNrc01/KD+QwgxoQ5BSWVJDo8vpXMhZ7DNelE3xC4f6N4fmZ6\n3r0rJFR6uBl9QFMuP4IOF/986uX3a0H4h6w/oNtop+dojsG35lBTIBQu1o+WYP6Z\n3LZJ6WKT4wKBgQDGVPB7s9KqGEY6OtJpbjX/IgH4ixxYPtj7K4eoylmZrEJaVBwr\n0DZWKoyRUYyCVuPHOeN4q/8JAT4wshACMRygTaDY9RcFNYzy03onWHGa+v7xnR7P\nCUMHOUd0GmR4FT4do65SMnRmR6MjrAJ2C0g05XwFZ/u51pES8RORWTbbUwKBgF1L\nPvEHE2NKdXgxZhVmB+/GebQmVKMTxFLwaeswf6Sxi3NI+IdmjfQ6iXDzkWM//9mP\nr97ijyuHgmuN9gm4bdiYdEac084k6vpMSg8grke/U2DzESAwOnn3Zg3m7Frn3aqb\nRl8d92aaQNpoAVQUwfx6DysCDA/ljMc3kh2rvngnAoGASI8BScKdXlhgB4gKE8A8\nlhKEwHwKP5CRQD0E2Nhgmg0bwLO+UgIX7zxJ5sDG0vOoyvTvc/9HJTJY8PFRp4IW\nrI9UPbqN+F4tvucNLOwiOvFV5L7aqAzdy4cwmWsIq02G6RFVVC/10YSFE+LSRL+K\nWxR2wlQ/qPvFHS/VDM+3mys=\n-----END PRIVATE KEY-----\n`
   };
-  reader.readAsText(file);
-});
-function importTeamFromCSV(csvText, filename) {
-  const lines = csvText.trim().split(/\r?\n/);
-  if (lines.length < 2) {
-    alert("CSV appears empty or invalid.");
-    return;
-  }
 
-  const headers = lines[0].split(",").map(h => h.trim());
-  const players = [];
+  async function uploadToDrive({ file, folderId, filename }) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folderId", folderId);
+    formData.append("filename", filename);
 
-  for (let i = 1; i < lines.length; i++) {
-    const raw = lines[i].trim();
-    if (!raw) continue;
-
-    const cols = raw.split(",");
-    const p = {};
-
-    headers.forEach((h, idx) => {
-      p[h] = cols[idx] ? cols[idx].trim() : "";
+    const res = await fetch("https://egsl-tryout-app.vercel.app/api/upload", {
+      method: "POST",
+      body: formData
     });
 
-    // Normalize fields your app expects
-    p.name = p.name || p.Name || "";
-    p.throws = p.throws || p.Throws || "";
-    p.notes = p.notes && p.notes.replace(/"/g, '') || "";
-
-    // Convert ratings to numbers
-    ["swing","contact","power","glove","arm","footwork","speed","hustle","coachability"]
-      .forEach(f => p[f] = Number(p[f]) || 0);
-
-    // Photo (Base64) if included
-    if (p.photo) p.photo = p.photo;
-
-    players.push(p);
+    return await res.json();
   }
 
-  // Team name from filename
-  const teamName = filename.replace(".csv", "");
-  const key = "team_" + teamName;
+  async function uploadToSupabase(file, filename, playerId) {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("filename", filename);
+    form.append("playerId", playerId);
+    form.append("mimeType", file.type);
 
-  localStorage.setItem(key, JSON.stringify(players));
-
-  alert(`Imported ${players.length} players into team: ${teamName}`);
-
-  // Refresh team list
-  renderTeamList();
-}
-
-/* SAVE CURRENT TEAM */
-function save() {
-  if (!currentTeamKey) return;
-  localStorage.setItem(currentTeamKey, JSON.stringify(players));
-}
-
-/* SUMMARY BAR */
-function updateSummary() {
-  const p = players[current] || {};
-  const fields = [
-    "swing","contact","power",
-    "glove","arm","footwork",
-    "speed","hustle","coachability"
-  ];
-
-  let sum = 0, count = 0;
-  fields.forEach(f => {
-    if (p[f] >= 1 && p[f] <= 4) {
-      sum += p[f];
-      count++;
-    }
-  });
-
-  const avg = count ? sum / count : 0;
-  const percent = (sum/36*100).toFixed(2);
-
-  document.getElementById("summaryScore").textContent = "Score: " + sum;
-  document.getElementById("summaryAvg").textContent = "Category Avg: " + avg.toFixed(1);
-  document.getElementById("summaryCompletion").textContent = Math.round(percent) + "%";
-  document.getElementById("summaryProgress").style.width = percent + "%";
-}
-
-/* LOAD PLAYER */
-function loadPlayer() {
-  const p = players[current] || {};
-  if (!p.progress) {
-    p.progress = defaultProgressFor(p);
-    save(); // persist upgrade
-    progressState.hitting.index = 0;
-    progressState.fielding.index = 0;
-    progressState.intangibles.index = 0;
-  }
-
-  document.getElementById("playerNameDisplay").textContent = p.name || `Player ${current + 1}`;
-
-  // Text inputs / textarea
-  document.querySelectorAll("input[data-field], textarea[data-field]").forEach(el => {
-    const field = el.getAttribute("data-field");
-    el.value = p[field] || "";
-  });
-
-  // Rating circles
-  document.querySelectorAll(".rating-circles").forEach(group => {
-    const field = group.getAttribute("data-field");
-    group.querySelectorAll(".circle").forEach(c => {
-      c.classList.remove("selected");
-      const level = parseInt(c.getAttribute("data-level"), 10);
-      if (p[field] === level) {
-        c.classList.add("selected");
-      }
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: form
     });
-  });
 
-  // Throws/Bats pill buttons
-  const throwsValue = p.throws || "";
-  document.querySelectorAll(".throws-option").forEach(opt => {
-    const val = opt.getAttribute("data-throws-value");
-    if (val === throwsValue) opt.classList.add("selected");
-    else opt.classList.remove("selected");
-  });
+    if (!res.ok) throw new Error("Upload failed");
 
-  // Profile photo
-  const profilePic = document.getElementById("profilePic");
-  if (p.photo) {
-    profilePic.src = p.photo;
-  } else {
-    profilePic.src = "";
+    return await res.json();
   }
 
-  updateSummary();
+  document.getElementById("fileInput").addEventListener("change", handleFileSelected);
 
-  // Re-Initialize Progress Panel
-  progressState.hitting.index = 0;
-  progressState.fielding.index = 0;
-  progressState.intangibles.index = 0;
+  async function handleFileSelected(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  renderProgressPanel("hitting");
-  renderProgressPanel("fielding");
-  renderProgressPanel("intangibles");
-
-}
-
-/* ADD PLAYER */
-function addPlayer() {
-  players.push({});
-  current = players.length - 1;
-  save();
-  loadPlayer();
-}
-
-/* DELETE PLAYER */
-function deletePlayer() {
-  if (players.length === 1) return;
-  players.splice(current, 1);
-  current = Math.max(0, current - 1);
-  save();
-  loadPlayer();
-}
-
-/* INPUT HANDLERS (name, notes) */
-document.addEventListener("input", e => {
-  const el = e.target;
-  if (!el.matches("input[data-field], textarea[data-field]")) return;
-
-  const field = el.getAttribute("data-field");
-  if (!players[current]) players[current] = {};
-  players[current][field] = el.value;
-  save();
-  loadPlayer();
-});
-
-/* RATING HANDLERS */
-document.addEventListener("click", e => {
-  // Rating circles
-  const circle = e.target.closest(".circle");
-  if (circle) {
-    const group = circle.closest(".rating-circles");
-    if (group) {
-      const field = group.getAttribute("data-field");
-      const level = parseInt(circle.getAttribute("data-level"), 10);
-      if (!players[current]) players[current] = {};
-      players[current][field] = level;
-      save();
-
-      group.querySelectorAll(".circle").forEach(c => c.classList.remove("selected"));
-      circle.classList.add("selected");
-      updateSummary();
+    const category = e.target.dataset.category;
+    if (!category) {
+      console.error("No category associated with file input");
+      return;
     }
-  }
+    if (!progressState[category]) {
+      console.warn("progressState missing for category, initializing default");
+      progressState[category] = { index: 0 };
+    }
+    const index = progressState[category].index;
+    const player = players[current];
+    const records = player.progress[category];
+    const record = records[index];
 
-  // Throws/Bats pill buttons
-  const throwsOption = e.target.closest(".throws-option");
-  if (throwsOption) {
-    const value = throwsOption.getAttribute("data-throws-value");
-    if (!players[current]) players[current] = {};
-    players[current].throws = value;
+    const timestamp = new Date().toISOString();
+    const clipNumber = nextClipNumber(record);
+
+    const filename = buildAttachmentFilename({
+      timestamp,
+      category,
+      sessionId: record.sessionId,
+      clipNumber,
+      file
+    });
+
+    const form = new FormData();
+    form.append("file", file);
+    form.append("filename", filename);
+    form.append("playerId", player.id);
+    form.append("mimeType", file.type);
+    form.append("sessionId", record.sessionId);
+    form.append("category", category);
+
+    const res = await fetch("https://egsl-tryout-app.vercel.app/api/upload", {
+      method: "POST",
+      body: form
+    });
+
+    if (!res.ok) {
+      console.error("Upload failed");
+      return;
+    }
+
+    const { path, publicUrl } = await res.json();
+
+    const attachment = {
+      id: crypto.randomUUID(),
+      type: file.type.startsWith("video") ? "video" : "image",
+      supabasePath: path,
+      url: publicUrl,
+      playerId: player.id,
+      category,
+      sessionId: record.sessionId,
+      timestamp,
+      clipNumber,
+      gemini: {
+        evaluated: false,
+        summary: null,
+        keyPoints: [],
+        score: null,
+        rawResponse: null
+      },
+      purged: false
+    };
+
+    record.media.attachments.push(attachment);
     save();
 
-    document.querySelectorAll(".throws-option").forEach(opt => opt.classList.remove("selected"));
-    throwsOption.classList.add("selected");
-  }
-});
-
-/* SWIPE NAVIGATION */
-document.getElementById("navPrevPlayer").addEventListener("click", () => {
-  changePlayer(-1);
-});
-
-document.getElementById("navNextPlayer").addEventListener("click", () => {
-  changePlayer(1);
-});
-
-document.getElementById("navPlayerTitle").addEventListener("click", () => {
-  openAllPlayersSelector();
-});
-
-function changePlayer(direction) {
-  const currentSortedIndex = sortedPlayerOrder.indexOf(current);
-  const newSortedIndex = currentSortedIndex + direction;
-
-  if (newSortedIndex < 0 || newSortedIndex >= sortedPlayerOrder.length) return;
-
-  current = sortedPlayerOrder[newSortedIndex];
-  loadPlayer();
-  updateNavBar();
-}
-
-function updateNavBar() {
-  const sortedIndex = sortedPlayerOrder.indexOf(current);
-  const title = document.getElementById("navPlayerText");
-
-  title.textContent = `Player ${sortedIndex + 1} of ${sortedPlayerOrder.length}`;
-
-  document.getElementById("navPrevPlayer").disabled = sortedIndex === 0;
-  document.getElementById("navNextPlayer").disabled = sortedIndex === sortedPlayerOrder.length - 1;
-}
-
-function openAllPlayersSelector() {
-  // Build the table fresh
-  buildPlayersTable();
-  hideAllViews();
-  document.getElementById("allPlayersView").style.display = "block";
-  // Highlight the current player
-  highlightCurrentPlayerInList();
-}
-
-function highlightCurrentPlayerInList() {
-  const rows = document.querySelectorAll("#playersTableBody tr");
-
-  rows.forEach((row, index) => {
-    if (index === current) {
-      row.style.background = "#d0e7ff";
-      row.style.fontWeight = "600";
-    } else {
-      row.style.background = "";
-      row.style.fontWeight = "";
-    }
-  });
-}
-
-function hideAllViews() {
-  document.getElementById("playerCard").style.display = "none";
-  document.getElementById("allPlayersView").style.display = "none";
-  const summary = document.getElementById("teamSummaryView");
-  if (summary) summary.style.display = "none";
-}
-
-/* ALL PLAYERS VIEW */
-function toggleAllPlayers() {
-  const card = document.getElementById("playerCard");
-  const list = document.getElementById("allPlayersView");
-
-  if (list.style.display === "none" || list.style.display === "") {
-    buildPlayersTable();
-    hideAllViews();
-    list.style.display = "block";
-  } else {
-    hideAllViews();
-    card.style.display = "block";
-  }
-}
-function buildPlayersTable() {
-  const tbody = document.querySelector("#playersTable tbody");
-  const thead = document.querySelector("#playersTable thead");
-  tbody.innerHTML = "";
-
-  const rows = players.map((p, index) => {
-
-    // Determine each player's latest config version
-    // const latestVersion = p.progress.hitting[0].configVersion || 1;
-    ensurePlayerProgress(p);
-    const latestVersion = getPlayerLatestVersion(p);
-    const cfg = RATING_CONFIGS[latestVersion];
-
-    function categoryStats(cat) {
-      const items = cfg[cat];
-
-      let sum = 0;
-      let maxSum = 0;
-
-      items.forEach(item => {
-        const val = p[item.field];
-        if (val >= 1 && val <= item.max) {
-          sum += val * item.weight;
-        }
-        maxSum += item.max * item.weight;
-      });
-
-      const avg = sum / items.length;
-      return { avg, sum, maxSum };
-    }
-
-    const hit = categoryStats("hitting");
-    const fld = categoryStats("fielding");
-    const intg = categoryStats("intangibles");
-
-    const overall = hit.sum + fld.sum + intg.sum;
-    const overallMax = hit.maxSum + fld.maxSum + intg.maxSum;
-    const percent = overallMax ? overall / overallMax : 0;
-
-    return {
-      index,
-      seed: index + 1,
-      name: p.name || `Player ${index + 1}`,
-      hitting: hit.avg,
-      fielding: fld.avg,
-      intangibles: intg.avg,
-      overall,
-      percent
-    };
-  });
-
-  // Sorting logic unchanged
-  if (sortState.column) {
-    rows.sort((a, b) => {
-      const col = sortState.column;
-      const dir = sortState.direction;
-
-      if (typeof a[col] === "string") {
-        return a[col].localeCompare(b[col]) * dir;
-      }
-      return (a[col] - b[col]) * dir;
-    });
-  }
-  sortedPlayerOrder = rows.map(r => r.index);
-
-  rows.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.seed}</td>
-      <td>${r.name}</td>
-      <td>${r.hitting.toFixed(1)}</td>
-      <td>${r.fielding.toFixed(1)}</td>
-      <td>${r.intangibles.toFixed(1)}</td>
-      <td>${r.overall.toFixed(1)}</td>
-      <td>${Math.round(r.percent * 100)}%</td>
-    `;
-
-    tr.addEventListener("click", () => {
-      current = r.index;
-      updateNavBar();
-      loadPlayer();
-      hideAllViews();
-      document.getElementById("playerCard").style.display = "block";
-    });
-
-    tbody.appendChild(tr);
-  });
-
-  // Header sorting unchanged
-  const headers = thead.querySelectorAll("th");
-  headers.forEach((th, i) => {
-    const colMap = [
-      "seed",
-      "name",
-      "hitting",
-      "fielding",
-      "intangibles",
-      "overall",
-      "percent"
-    ];
-
-    const col = colMap[i];
-
-    th.onclick = () => {
-      if (sortState.column === col) {
-        sortState.direction *= -1;
-      } else {
-        sortState.column = col;
-        sortState.direction = 1;
-      }
-
-      headers.forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
-      th.classList.add(sortState.direction === 1 ? "sorted-asc" : "sorted-desc");
-
-      buildPlayersTable();
-    };
-  });
-}
-
-/* PDF EXPORT */
-async function exportPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: "pt", format: "letter" });
-
-  const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "Team";
-  let y = 40;
-
-  doc.setFontSize(18);
-  doc.text(`${teamName} – Player Roster`, 40, y);
-  y += 30;
-
-  doc.setFontSize(12);
-
-  for (let i = 0; i < players.length; i++) {
-    const p = players[i];
-
-    // Section header
-    doc.setFontSize(14);
-    doc.text(`${i + 1}. ${p.name || "Unnamed Player"}`, 40, y);
-    y += 20;
-    doc.setFontSize(12);
-
-    // Photo
-    if (p.photo) {
-      try {
-        doc.addImage(p.photo, "JPEG", 40, y, 80, 80);
-      } catch (e) {
-        console.warn("Image failed to load for PDF:", e);
-      }
-    }
-
-    // Player info
-    let infoY = y;
-    if (p.photo) infoY += 90;
-
-    doc.text(`Throws/Bats: ${p.throws || "-"}`, 140, y + 15);
-
-    // Ratings
-    const ratingFields = [
-      ["Swing", p.swing],
-      ["Contact", p.contact],
-      ["Power", p.power],
-      ["Glove", p.glove],
-      ["Arm", p.arm],
-      ["Footwork", p.footwork],
-      ["Speed", p.speed],
-      ["Hustle", p.hustle],
-      ["Coachability", p.coachability]
-    ];
-
-    let ry = infoY;
-    ratingFields.forEach(([label, val]) => {
-      doc.text(`${label}: ${val || "-"}`, 40, ry);
-      ry += 16;
-    });
-
-    // Notes
-    if (p.notes) {
-      ry += 10;
-      doc.text("Notes:", 40, ry);
-      ry += 14;
-
-      const wrapped = doc.splitTextToSize(p.notes, 520);
-      doc.text(wrapped, 40, ry);
-      ry += wrapped.length * 14;
-    }
-
-    y = ry + 20;
-
-    // Page break if needed
-    if (y > 700) {
-      doc.addPage();
-      y = 40;
-    }
-  }
-
-  doc.save(`${teamName}_players.pdf`);
-}
-  
-/* CSV EXPORT */
-function exportCSV() {
-  if (!players || players.length === 0) return;
-
-  const fields = [
-    "name","throws",
-    "swing","contact","power",
-    "glove","arm","footwork",
-    "speed","hustle","coachability",
-    "notes"
-    //,
-    //"photo"   // NEW: include Base64 image
-  ];
-
-  const header = fields.join(",");
-  const rows = players.map(p => {
-    const player = p || {};
-    return fields.map(field => {
-      let value = player[field];
-
-      // Ensure empty fields are blank
-      if (value === undefined || value === null) value = "";
-
-      // Escape quotes
-      value = String(value).replace(/"/g, '""');
-
-      // Wrap in quotes if needed
-      if (value.includes(",") || value.includes("\n") || value.includes("\"")) {
-        value = `"${value}"`;
-      }
-
-      return value;
-    }).join(",");
-  });
-
-  const csv = [header, ...rows].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  const teamName = currentTeamKey ? currentTeamKey.replace("team_", "") : "team";
-  a.href = url;
-  a.download = teamName + "_players.csv";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-function initProgressSwipeListeners() {
-  setupSwipe("hitting");
-  setupSwipe("fielding");
-  setupSwipe("intangibles");
-}
-
-function defaultProgressFor(player) {
-  const today = new Date().toISOString().split("T")[0];
-
-  function makeCategory(cat) {
-    const cfg = RATING_CONFIGS[LATEST_CONFIG_VERSION][cat];
-
-    const obj = {
-      date: today,
-      media: { attachments: [] },
-      configVersion: LATEST_CONFIG_VERSION
-    };
-
-    cfg.forEach(item => {
-      obj[item.field] = player[item.field] ?? 1;
-    });
-
-    return [obj];
-  }
-
-  return {
-    hitting: makeCategory("hitting"),
-    fielding: makeCategory("fielding"),
-    intangibles: makeCategory("intangibles")
-  };
-}
-
-function ensurePlayerProgress(p) {
-  if (!p.progress) p.progress = {};
-
-  ["hitting", "fielding", "intangibles"].forEach(cat => {
-    if (!Array.isArray(p.progress[cat]) || p.progress[cat].length === 0) {
-      // Create a default record using version 1
-      const today = new Date().toISOString().split("T")[0];
-      const cfg = RATING_CONFIGS[1][cat];
-
-      const rec = {
-        date: today,
-        media: { attachments: [] },
-        configVersion: 1
-      };
-
-      cfg.forEach(item => {
-        rec[item.field] = 1;
-      });
-
-      p.progress[cat] = [rec];
-    }
-  });
-
-  return p;
-}
-
-function getPlayerLatestVersion(p) {
-  const cats = ["hitting", "fielding", "intangibles"];
-  let version = 1;
-
-  cats.forEach(cat => {
-    const rec = p.progress[cat][0];
-    if (rec && rec.configVersion && rec.configVersion > version) {
-      version = rec.configVersion;
-    }
-  });
-
-  return version;
-}
-
-function setupSwipe(category) {
-  const panel = document.getElementById(`progress-${category}`);
-
-  let startX = 0;
-  let endX = 0;
-  let didMove = false;
-
-  panel.addEventListener("touchstart", e => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    didMove = false;
-  });
-
-  panel.addEventListener("touchmove", e => {
-    const x = e.touches[0].clientX;
-    const y = e.touches[0].clientY;
-    
-    endX = x;
-    
-    const dx = Math.abs(x - startX);
-    const dy = Math.abs(y - startY);
-    
-    // Only count as movement if horizontal movement is intentional
-    if (dx > 25 && dx > dy) {
-      didMove = true;
-    }
-  });
-  
-  panel.addEventListener("touchend", e => {
-    if (!didMove) return;
-
-    const delta = endX - startX;
-    if (Math.abs(delta) < 60) return;
-
-    if (delta < 0) {
-      handleSwipeLeft(category);
-    } else {
-      handleSwipeRight(category);
-    }
-  });
-
-  function handleSwipeLeft(category) {
-    const state = progressState[category];
-    const records = players[current].progress[category];
-
-    if (state.index === 0) {
-      createNewProgressRecord(category);
-    } else {
-      state.index--;
-    }
-
-    animateSwipe(category, "left");
     renderProgressPanel(category);
   }
 
-  function handleSwipeRight(category) {
-    const state = progressState[category];
-    const records = players[current].progress[category];
+  async function nuclearPurge() {
+    await fetch("https://egsl-tryout-app.vercel.app/api/purge-all", { method: "POST" });
 
-    if (state.index < records.length - 1) {
-      state.index++;
-      animateSwipe(category, "right");
-      renderProgressPanel(category);
-    }
-  }
-}
+    purgeAllLocalAttachments();
 
-function animateSwipe(category, direction) {
-  const panel = document.getElementById(`progress-${category}`);
-  panel.classList.add(`swipe-${direction}`);
+    progressState = {};
+    current = 0;
 
-  setTimeout(() => {
-    panel.classList.remove(`swipe-${direction}`);
-  }, 150);
-}
+    const firstCategory = Object.keys(RATING_CONFIGS[1])[0];
+    progressState[firstCategory] = { index: 0 };
 
-function createNewProgressRecord(category) {
-  const player = players[current];
-  const records = player.progress[category];
-  const latestRecord = records[0]; // previous newest session
-
-  const today = new Date().toISOString().split("T")[0];
-
-  // Use the latest config version
-  const cfg = RATING_CONFIGS[LATEST_CONFIG_VERSION][category];
-
-  const newRecord = {
-    date: today,
-    media: { attachments: [] },
-    configVersion: LATEST_CONFIG_VERSION
-  };
-
-  // Copy forward values when possible
-  cfg.forEach(item => {
-    if (latestRecord && latestRecord[item.field] != null) {
-      newRecord[item.field] = latestRecord[item.field];
-    } else {
-      newRecord[item.field] = 1; // default for new fields
-    }
-  });
-
-  // Insert at the front
-  records.unshift(newRecord);
-
-  // Reset index to newest
-  progressState[category].index = 0;
-
-  save();
-}
-
-function renderProgressPanel(category) {
-  const player = players[current];
-  const records = player.progress[category];
-  const index = progressState[category].index;
-  const record = records[index];
-  const version = record.configVersion || 1;
-  const cfg = RATING_CONFIGS[version][category];
-
-  const recordEl = document.getElementById(`${category}Record`);
-
-  //
-  // 1. EDITABLE vs READONLY
-  //
-  if (index === 0) {
-    recordEl.classList.add("editable");
-    recordEl.classList.remove("readonly");
-  } else {
-    recordEl.classList.add("readonly");
-    recordEl.classList.remove("editable");
+    renderProgressPanel(firstCategory);
   }
 
-  //
-  // 2. META LABELS
-  //
-  const visualNumber = records.length - index;
-  document.getElementById(`${category}RecordIndex`).textContent =
-    `Session ${visualNumber} of ${records.length}`;
+  function purgeAllLocalAttachments() {
+    for (const player of players) {
+      if (!player.progress) continue;
+      for (const category in player.progress) {
+        for (const record of player.progress[category]) {
+          if (record.media && record.media.attachments) {
+            record.media.attachments = [];
+          }
+        }
+      }
+    }
 
-  document.getElementById(`${category}RecordDate`).textContent =
-    formatDate(record.date);
+    save();
+    console.log("All local attachment metadata purged.");
+  }
 
-  //
-  // 3. BUILD RATING ITEMS (versioned)
-  //
-  const ratingGroup = document.querySelector(`#progress-${category} .rating-group-grid`);
+  function buildAttachmentFilename({ timestamp, category, sessionId, clipNumber, file }) {
+    const ext = file.name.split(".").pop().toLowerCase();
+    return `${timestamp}_${category}_${sessionId}_C${clipNumber}.${ext}`;
+  }
 
-  ratingGroup.innerHTML =
-    cfg
-      .sort((a, b) => a.order - b.order)
-      .map(item => `
-        <div class="rating-item">
-          <div class="rating-label">${item.label}</div>
-          <div class="rating-circles" data-field="${item.field}">
-            ${Array.from({ length: item.max }, (_, i) => `
-              <div class="circle" data-level="${i + 1}"></div>
-            `).join("")}
-          </div>
-        </div>
-      `).join("");
+  function nextClipNumber(record) {
+    const clips = record.media.attachments;
+    return clips.length + 1;
+  }
+</script>
 
-  //
-  // 4. REATTACH CLICK HANDLERS (only for newest session)
-  //
-  if (index === 0) {
+<!-- 7. PROGRESS UI, SWIPE, ATTACHMENTS, EVALUATION -->
+<script data-chunk="progress-ui-and-swipe">
+  function initProgressSwipeListeners() {
+    setupSwipe("hitting");
+    setupSwipe("fielding");
+    setupSwipe("intangibles");
+  }
+
+  function setupSwipe(category) {
+    const panel = document.getElementById(`progress-${category}`);
+
+    let startX = 0;
+    let startY = 0;
+    let endX = 0;
+    let didMove = false;
+
+    panel.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      didMove = false;
+    });
+
+    panel.addEventListener("touchmove", e => {
+      const x = e.touches[0].clientX;
+      const y = e.touches[0].clientY;
+
+      endX = x;
+
+      const dx = Math.abs(x - startX);
+      const dy = Math.abs(y - startY);
+
+      if (dx > 25 && dx > dy) {
+        didMove = true;
+      }
+    });
+
+    panel.addEventListener("touchend", () => {
+      if (!didMove) return;
+
+      const delta = endX - startX;
+      if (Math.abs(delta) < 60) return;
+
+      if (delta < 0) {
+        handleSwipeLeft(category);
+      } else {
+        handleSwipeRight(category);
+      }
+    });
+
+    function handleSwipeLeft(cat) {
+      const state = progressState[cat];
+      const records = players[current].progress[cat];
+
+      if (state.index === 0) {
+        createNewProgressRecord(cat);
+      } else {
+        state.index--;
+      }
+
+      animateSwipe(cat, "left");
+      renderProgressPanel(cat);
+    }
+
+    function handleSwipeRight(cat) {
+      const state = progressState[cat];
+      const records = players[current].progress[cat];
+
+      if (state.index < records.length - 1) {
+        state.index++;
+        animateSwipe(cat, "right");
+        renderProgressPanel(cat);
+      }
+    }
+  }
+
+  function animateSwipe(category, direction) {
+    const panel = document.getElementById(`progress-${category}`);
+    panel.classList.add(`swipe-${direction}`);
+
+    setTimeout(() => {
+      panel.classList.remove(`swipe-${direction}`);
+    }, 150);
+  }
+
+  function createNewProgressRecord(category) {
+    const player = players[current];
+    const records = player.progress[category];
+    const latestRecord = records[0];
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const version = LATEST_CONFIG_VERSION;
+    const cfg = RATING_CONFIGS[version][category];
+
+    const newRecord = {
+      date: today,
+      sessionId: crypto.randomUUID(),
+      media: { attachments: [] },
+      configVersion: version
+    };
+
     cfg.forEach(item => {
+      if (latestRecord && latestRecord[item.field] != null) {
+        newRecord[item.field] = latestRecord[item.field];
+      } else {
+        newRecord[item.field] = 1;
+      }
+    });
+
+    records.unshift(newRecord);
+    progressState[category].index = 0;
+
+    save();
+  }
+
+  function renderProgressPanel(category) {
+    const player = players[current];
+    const records = player.progress[category];
+    const index = progressState[category].index;
+    const record = records[index];
+    const version = record.configVersion || 1;
+    const cfg = RATING_CONFIGS[version][category];
+
+    const recordEl = document.getElementById(`${category}Record`);
+
+    if (index === 0) {
+      recordEl.classList.add("editable");
+      recordEl.classList.remove("readonly");
+    } else {
+      recordEl.classList.add("readonly");
+      recordEl.classList.remove("editable");
+    }
+
+    const visualNumber = records.length - index;
+    document.getElementById(`${category}RecordIndex`).textContent =
+      `Session ${visualNumber} of ${records.length}`;
+
+    document.getElementById(`${category}RecordDate`).textContent =
+      formatDate(record.date);
+
+    const ratingGroup = document.querySelector(`#progress-${category} .rating-group-grid`);
+
+    ratingGroup.innerHTML =
+      cfg
+        .sort((a, b) => a.order - b.order)
+        .map(item => `
+          <div class="rating-item">
+            <div class="rating-label">${item.label}</div>
+            <div class="rating-circles" data-field="${item.field}">
+              ${Array.from({ length: item.max }, (_, i) => `
+                <div class="circle" data-level="${i + 1}"></div>
+              `).join("")}
+            </div>
+          </div>
+        `).join("");
+
+    if (index === 0) {
+      cfg.forEach(item => {
+        const circles = document.querySelectorAll(
+          `#progress-${category} .rating-circles[data-field="${item.field}"] .circle`
+        );
+
+        circles.forEach(circle => {
+          circle.addEventListener("click", () => {
+            const level = Number(circle.dataset.level);
+            record[item.field] = level;
+            renderProgressPanel(category);
+            save();
+          });
+        });
+      });
+    }
+
+    cfg.forEach(item => {
+      const field = item.field;
       const circles = document.querySelectorAll(
-        `#progress-${category} .rating-circles[data-field="${item.field}"] .circle`
+        `#progress-${category} .rating-circles[data-field="${field}"] .circle`
       );
 
       circles.forEach(circle => {
-        circle.addEventListener("click", () => {
-          const level = Number(circle.dataset.level);
-          record[item.field] = level;
-          renderProgressPanel(category);
-          save();
+        const level = Number(circle.dataset.level);
+
+        circle.classList.remove("active-blue", "active-green");
+
+        if (index === 0) {
+          if (record[field] === level) circle.classList.add("active-blue");
+          circle.style.pointerEvents = "auto";
+        } else {
+          if (record[field] === level) circle.classList.add("active-green");
+          circle.style.pointerEvents = "none";
+        }
+      });
+    });
+
+    renderAttachments(category, record);
+  }
+
+  function renderAttachments(category, record) {
+    if (!record.media) record.media = { attachments: [] };
+    if (!record.media.attachments) record.media.attachments = [];
+
+    const container = document.getElementById(`${category}Attachments`);
+    container.innerHTML = "";
+
+    const isEditable = progressState[category].index === 0;
+    const attachments = record.media.attachments;
+    const count = attachments.length;
+
+    const icon = document.createElement("img");
+    icon.src = "icons/paperclip.svg";
+    icon.className = "attachments-icon";
+
+    const countEl = document.createElement("span");
+    countEl.className = "attachments-count";
+
+    if (count > 0) {
+      countEl.textContent = count;
+    } else if (isEditable) {
+      countEl.textContent = "+";
+    } else {
+      container.classList.add("disabled");
+    }
+
+    let badgeClass = "gemini-none";
+
+    if (count > 0) {
+      const evaluated = attachments.filter(a => a.gemini).length;
+
+      if (evaluated === 0) badgeClass = "gemini-none";
+      else if (evaluated === count) badgeClass = "gemini-all";
+      else badgeClass = "gemini-some";
+    }
+
+    const badge = document.createElement("div");
+    badge.className = `gemini-session-badge ${badgeClass}`;
+
+    container.appendChild(icon);
+    container.appendChild(countEl);
+    container.appendChild(badge);
+
+    container.onclick = () => {
+      if (isEditable) openAttachmentPicker(category);
+      else openAttachmentViewer(category, progressState[category].index, attachments);
+    };
+  }
+
+  function openAttachmentPicker(category) {
+    if (!progressState[category]) {
+      progressState[category] = { index: 0 };
+    }
+    const modal = document.getElementById("attachmentModal");
+    const content = document.getElementById("attachmentModalContent");
+
+    content.innerHTML = `
+      <h3>Add Attachment</h3>
+      <button id="batchGeminiBtn" class="gemini-batch-btn">Evaluate All</button>
+      <button id="addPhotoVideoBtn">Add Photo/Video</button>
+      <button id="addNoteBtn">Add Note</button>
+      <button id="closeModalBtn">Cancel</button>
+    `;
+
+    modal.classList.remove("hidden");
+
+    document.getElementById("closeModalBtn").onclick = () => {
+      modal.classList.add("hidden");
+    };
+
+    document.getElementById("addPhotoVideoBtn").onclick = () => {
+      modal.classList.add("hidden");
+
+      const input = document.getElementById("fileInput");
+      input.dataset.category = category;
+      input.click();
+    };
+
+    document.getElementById("addNoteBtn").onclick = () => {
+      modal.classList.add("hidden");
+      openNoteCreator(category);
+    };
+
+    document.getElementById("batchGeminiBtn").onclick = async () => {
+      const sessionIndex = progressState[category].index;
+
+      const record = players[current].progress[category][sessionIndex];
+      const attachments = record.media?.attachments?.filter(a =>
+        a.type === "image" || a.type === "video"
+      ) || [];
+
+      if (attachments.length === 0) {
+        alert("No photo/video attachments to evaluate.");
+        return;
+      }
+
+      const btn = document.getElementById("batchGeminiBtn");
+      btn.textContent = "Evaluating...";
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          playerId: players[current].id,
+          teamId: currentTeamName,
+          category,
+          sessionIndex,
+          attachments: attachments.map(a => ({
+            id: a.id,
+            url: a.url,
+            type: a.type
+          }))
+        };
+
+        const result = await geminiEvaluateBatch(payload);
+
+        // Merge results back into attachments
+        result.results.forEach(r => {
+          const att = attachments.find(a => a.id === r.attachmentId);
+          if (att) att.gemini = r;
         });
+
+        savePlayer(players[current]);
+        alert("Gemini evaluation complete!");
+      } catch (err) {
+        alert(err.message);
+      }
+
+      btn.textContent = "Evaluate All";
+      btn.disabled = false;
+
+      renderAttachments(category, record);
+    };
+  }
+
+  function openNoteCreator(category) {
+    const modal = document.getElementById("attachmentModal");
+    const content = document.getElementById("attachmentModalContent");
+
+    content.innerHTML = `
+      <h3>Add Note</h3>
+      <textarea id="noteText" placeholder="Enter note..." style="width:100%;height:120px;"></textarea>
+      <div style="margin-top:12px;">
+        <button id="saveNoteBtn">Save Note</button>
+        <button id="cancelNoteBtn">Cancel</button>
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+
+    document.getElementById("cancelNoteBtn").onclick = () => {
+      modal.classList.add("hidden");
+    };
+
+    document.getElementById("saveNoteBtn").onclick = () => {
+      const text = document.getElementById("noteText").value.trim();
+      if (!text) {
+        alert("Note cannot be empty.");
+        return;
+      }
+
+      const attachment = {
+        id: crypto.randomUUID(),
+        type: "note",
+        text,
+        timestamp: Date.now(),
+        gemini: null
+      };
+
+      const record = players[current].progress[category][progressState[category].index];
+
+      if (!record.media) record.media = { attachments: [] };
+      if (!record.media.attachments) record.media.attachments = [];
+
+      record.media.attachments.push(attachment);
+
+      savePlayer(players[current]);
+
+      modal.classList.add("hidden");
+
+      renderAttachments(category, record);
+    };
+  }
+
+  function openAttachmentViewer(category, sessionIndex, attachments) {
+    const modal = document.getElementById("attachmentModal");
+    const content = document.getElementById("attachmentModalContent");
+
+    let html = `<h3>Attachments</h3><div class="attachment-grid">`;
+
+    attachments.forEach(att => {
+      const badgeClass = att.gemini ? "gemini-badge" : "gemini-badge pending";
+
+      html += `
+        <div class="attachment-thumb" data-id="${att.id}">
+          ${att.type === "image" ? `<img src="${att.url}" class="thumb-img">` : ""}
+          ${att.type === "video" ? `<video src="${att.url}" class="thumb-video"></video>` : ""}
+          ${att.type === "note" ? `<div class="note-thumb">${att.text.slice(0,40)}...</div>` : ""}
+          <div class="${badgeClass}"></div>
+        </div>
+      `;
+    });
+
+    html += `</div><button id="closeModalBtn">Close</button>`;
+
+    content.innerHTML = html;
+    modal.classList.remove("hidden");
+
+    document.getElementById("closeModalBtn").onclick = () => {
+      modal.classList.add("hidden");
+    };
+
+    content.querySelectorAll(".attachment-thumb").forEach(div => {
+      div.onclick = () => {
+        const id = div.dataset.id;
+        const att = attachments.find(a => a.id === id);
+
+        modal.classList.add("hidden");
+
+        openAttachmentViewerSingle(category, sessionIndex, att);
+      };
+    });
+  }
+
+  function openAttachmentViewerSingle(category, sessionIndex, attachment) {
+    const modal = document.getElementById("attachmentViewerModal");
+    const content = document.getElementById("attachmentViewerContent");
+
+    let previewHTML = "";
+
+    if (attachment.type === "image") {
+      previewHTML = `<img src="${attachment.url}" />`;
+    } else if (attachment.type === "video") {
+      previewHTML = `<video src="${attachment.url}" controls></video>`;
+    } else if (attachment.type === "note") {
+      previewHTML = `<div class="note-viewer">${attachment.text}</div>`;
+    }
+
+    const geminiHTML = attachment.gemini
+      ? `<div id="geminiResultBox">
+           <strong>Gemini Evaluation:</strong><br>
+           ${attachment.gemini.summary || "No summary"}
+         </div>`
+      : `<div id="geminiResultBox" style="display:none;"></div>`;
+
+    content.innerHTML = `
+      <h3>Attachment</h3>
+      ${previewHTML}
+
+      <div class="attachment-viewer-buttons">
+        <button id="deleteAttachmentBtn" style="background:#d9534f;color:white;">Delete</button>
+        <button id="geminiBtn" style="background:#0275d8;color:white;">Evaluate</button>
+        <button id="closeAttachmentViewerBtn">Close</button>
+      </div>
+
+      ${geminiHTML}
+    `;
+
+    modal.classList.remove("hidden");
+
+    document.getElementById("closeAttachmentViewerBtn").onclick = () => {
+      modal.classList.add("hidden");
+    };
+
+    document.getElementById("deleteAttachmentBtn").onclick = () => {
+      const record = players[current].progress[category][sessionIndex];
+      record.media.attachments = record.media.attachments.filter(a => a.id !== attachment.id);
+
+      savePlayer(players[current]);
+      modal.classList.add("hidden");
+      renderAttachments(category, record);
+    };
+
+    document.getElementById("geminiBtn").onclick = async () => {
+      const btn = document.getElementById("geminiBtn");
+      btn.textContent = "Evaluating...";
+
+      const payload = {
+        playerId: players[current].id,
+        teamId: currentTeamName,
+        category,
+        sessionIndex,
+        attachmentId: attachment.id,
+        url: attachment.url
+      };
+
+      try {
+        const result = await geminiEvaluateSingle(payload);
+
+        // Save into attachment metadata
+        attachment.gemini = result;
+        savePlayer(players[current]);
+
+        const box = document.getElementById("geminiResultBox");
+        box.style.display = "block";
+        box.innerHTML = `
+          <strong>Gemini Evaluation:</strong><br>
+          ${result.summary || "No summary"}
+        `;
+
+        btn.textContent = "Evaluate Again";
+      } catch (err) {
+        alert("Gemini evaluation failed.");
+        btn.textContent = "Evaluate";
+      }
+    };
+
+  }
+
+  async function evaluateAttachments(category, sessionIndex, attachments) {
+    if (!attachments || attachments.length === 0) {
+      throw new Error("No attachments provided");
+    }
+
+    const payload = {
+      playerId: players[current].id,
+      teamId: currentTeamName,
+      category,
+      sessionIndex,
+      attachments: attachments.map(a => ({
+        id: a.id,
+        url: a.url,
+        type: a.type
+      }))
+    };
+
+    const res = await fetch("https://egsl-tryout-app.vercel.app/api/evaluate-attachments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error("Gemini evaluation failed");
+    }
+
+    const result = await res.json();
+
+    for (const r of result.results) {
+      const att = attachments.find(a => a.id === r.attachmentId);
+      if (att) att.gemini = r;
+    }
+
+    savePlayer(players[current]);
+
+    return result;
+  }
+
+  async function evaluateCurrentSessionAttachment(category) {
+    const sessionIndex = progressState[category].index;
+    const record = players[current].progress[category][sessionIndex];
+
+    const attachments = record.media?.attachments?.filter(a =>
+      a.type === "image" || a.type === "video"
+    ) || [];
+
+    if (attachments.length === 0) {
+      alert("No photo/video attachments to evaluate.");
+      return;
+    }
+
+    alert(`Evaluating ${attachments.length} attachment(s)...`);
+
+    try {
+      await evaluateAttachments(category, sessionIndex, attachments);
+      alert("Gemini evaluation complete!");
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function initCircleListeners() {
+    const allCircles = document.querySelectorAll(".rating-circles .circle");
+
+    allCircles.forEach(circle => {
+      circle.addEventListener("click", () => {
+        const field = circle.parentElement.dataset.field;
+        const level = Number(circle.dataset.level);
+
+        const category = getCategoryFromElement(circle);
+        const index = progressState[category].index;
+        if (index !== 0) return;
+
+        const player = players[current];
+        const record = player.progress[category][0];
+
+        record[field] = level;
+
+        save();
+        renderProgressPanel(category);
       });
     });
   }
 
-  //
-  // 5. UPDATE CIRCLE COLORS
-  //
-  cfg.forEach(item => {
-    const field = item.field;
-    const circles = document.querySelectorAll(
-      `#progress-${category} .rating-circles[data-field="${field}"] .circle`
-    );
-
-    circles.forEach(circle => {
-      const level = Number(circle.dataset.level);
-
-      circle.classList.remove("active-blue", "active-green");
-
-      if (index === 0) {
-        if (record[field] === level) circle.classList.add("active-blue");
-        circle.style.pointerEvents = "auto";
-      } else {
-        if (record[field] === level) circle.classList.add("active-green");
-        circle.style.pointerEvents = "none";
-      }
-    });
-  });
-
-  //
-  // 6. ATTACHMENTS
-  //
-  renderAttachments(category, record);
-}
-
-function renderAttachments(category, record) {
-  if (!record.media) record.media = { attachments: [] };
-  if (!record.media.attachments) record.media.attachments = [];
-  
-  const container = document.getElementById(`${category}Attachments`);
-  container.innerHTML = "";
-
-  const isEditable = progressState[category].index === 0;
-  const count = record.media.attachments.length;
-
-  const icon = document.createElement("img");
-  icon.src = "icons/paperclip.svg";
-  icon.className = "attachments-icon";
-
-  const countEl = document.createElement("span");
-  countEl.className = "attachments-count";
-
-  if (count > 0) {
-    countEl.textContent = count;
-  } else if (isEditable) {
-    countEl.textContent = "+";
-  } else {
-    container.classList.add("disabled");
+  function getCategoryFromElement(el) {
+    const recordEl = el.closest(".progress-record");
+    if (!recordEl) return null;
+    if (recordEl.id.includes("hitting")) return "hitting";
+    if (recordEl.id.includes("fielding")) return "fielding";
+    if (recordEl.id.includes("intangibles")) return "intangibles";
+    return null;
   }
 
-  container.appendChild(icon);
-  container.appendChild(countEl);
-
-  container.onclick = () => {
-    if (isEditable) openAttachmentPicker(category);
-    else openAttachmentViewer(record.media.attachments);
-  };
-}
-
-function openAttachmentPicker(category) {
-  console.log("Add attachment to", category);
-  // open camera or file picker
-}
-
-function openAttachmentViewer(attachments) {
-  console.log("View attachments:", attachments);
-  // open modal/gallery
-}
-
-function initCircleListeners() {
-  const allCircles = document.querySelectorAll(".rating-circles .circle");
-
-  allCircles.forEach(circle => {
-    circle.addEventListener("click", () => {
-      const field = circle.parentElement.dataset.field;
-      const level = Number(circle.dataset.level);
-
-      // Only update if newest session
-      const category = getCategoryFromElement(circle);
-      const index = progressState[category].index;
-      if (index !== 0) return;
-
-      const player = players[current];
-      const record = player.progress[category][0];
-
-      record[field] = level;
-
-      save();
-      //updateAllPlayersView();
-      renderProgressPanel(category);
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
     });
+  }
+
+  function capitalize(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+</script>
+
+<!-- 8. PROFILE PHOTO & INPUT HANDLERS -->
+<script data-chunk="profile-photo-and-inputs">
+  document.addEventListener("input", e => {
+    const el = e.target;
+    if (!el.matches("input[data-field], textarea[data-field]")) return;
+
+    const field = el.getAttribute("data-field");
+    if (!players[current]) players[current] = {};
+    players[current][field] = el.value;
+    save();
+    loadPlayer();
   });
-}
-function getCategoryFromElement(el) {
-  const recordEl = el.closest(".progress-record");
-  if (recordEl.id.includes("hitting")) return "hitting";
-  if (recordEl.id.includes("fielding")) return "fielding";
-  if (recordEl.id.includes("intangibles")) return "intangibles";
-}
 
-function formatDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
-}
+  document.addEventListener("click", e => {
+    const circle = e.target.closest(".circle");
+    if (circle) {
+      const group = circle.closest(".rating-circles");
+      if (group) {
+        const field = group.getAttribute("data-field");
+        const level = parseInt(circle.getAttribute("data-level"), 10);
+        if (!players[current]) players[current] = {};
+        players[current][field] = level;
+        save();
 
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-/* PROFILE PHOTO HANDLING */
-document.getElementById("profilePicWrapper").addEventListener("click", () => {
-  document.getElementById("photoInput").click();
-});
-
-document.getElementById("photoInput").addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function (event) {
-    const img = new Image();
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-      const maxSize = 300; // compress to ~300px
-      let width = img.width;
-      let height = img.height;
-
-      if (width > height) {
-        if (width > maxSize) {
-          height *= maxSize / width;
-          width = maxSize;
-        }
-      } else {
-        if (height > maxSize) {
-          width *= maxSize / height;
-          height = maxSize;
-        }
+        group.querySelectorAll(".circle").forEach(c => c.classList.remove("selected"));
+        circle.classList.add("selected");
+        updateSummary();
       }
+    }
 
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const compressedData = canvas.toDataURL("image/jpeg", 0.7);
-
-      players[current].photo = compressedData;
+    const throwsOption = e.target.closest(".throws-option");
+    if (throwsOption) {
+      const value = throwsOption.getAttribute("data-throws-value");
+      if (!players[current]) players[current] = {};
+      players[current].throws = value;
       save();
-      loadPlayer();
+
+      document.querySelectorAll(".throws-option").forEach(opt => opt.classList.remove("selected"));
+      throwsOption.classList.add("selected");
+    }
+  });
+
+  document.getElementById("profilePicWrapper").addEventListener("click", () => {
+    document.getElementById("photoInput").click();
+  });
+
+  document.getElementById("photoInput").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const img = new Image();
+      img.onload = function () {
+        const canvas = document.createElement("canvas");
+        const maxSize = 300;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height *= maxSize / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width *= maxSize / height;
+            height = maxSize;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedData = canvas.toDataURL("image/jpeg", 0.7);
+
+        players[current].photo = compressedData;
+        save();
+        loadPlayer();
+      };
+      img.src = event.target.result;
     };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(file);
-});
+    reader.readAsDataURL(file);
+  });
 
-normalizeAllPlayers();
-buildPlayersTable();
-/* INITIALIZE */
-renderTeamList();
-initCircleListeners();
-initProgressSwipeListeners();
+  document.getElementById("navPrevPlayer").addEventListener("click", () => {
+    changePlayer(-1);
+  });
 
-function seedTeam(teamName) {
-  const names = [
-    "ILeiana Aguilar",
-    "Jana Almasri",
-    "Juliet Apodaca",
-    "Alannah Arguello",
-    "Shealey Belardes",
-    "Alexis Berggren",
-    "Katelyn Borecky",
-    "Cambria Brosnan",
-    "Angela Calixto",
-    "Natalie Cervantes",
-    "Penelope Cuevas",
-    "Avery Dean",
-    "Alyson Eden",
-    "Adeline Esquivel",
-    "Lily Esquivel",
-    "Aryanna Fernandez",
-    "Harper Flores",
-    "Kaylee Flores",
-    "Haley Franco",
-    "Evelyn Gardino",
-    "Maddison Garcia",
-    "Cora Gottlieb",
-    "Tavyn Green",
-    "Jaedyn Kandyce Grill",
-    "Leilani Hernandez",
-    "Kara Hutchinson",
-    "Lilyana Jordan",
-    "Aria Lopez",
-    "Bella Lopez",
-    "Bianca Lopez",
-    "Noelle Marquez",
-    "Caroline McDonald",
-    "Mila Medina",
-    "Samantha Mendoza",
-    "Dryden Miyajima",
-    "Kennedy Moralez",
-    "Madison Murphy",
-    "Hannah Nack",
-    "Leiyanah Paipa",
-    "Victoria Parker",
-    "Khloe Pettit",
-    "Katalina Ponce",
-    "Cierra Prieto",
-    "Madison Pulver",
-    "Aiyana Renteria",
-    "Kaylee Rhodes",
-    "Alysse Robles",
-    "Daliah Sanchez",
-    "Savannah Springsteen",
-    "Riley Tanner",
-    "Evelyn Tellez",
-    "Isabel Torres",
-    "Noshla Turner",
-    "Uushla Turner",
-    "Ariyana Ari Tyler",
-    "Olivia Vallejos",
-    "Stella Vega",
-    "Amelia Webber",
-    "Gloria Wiebel"
-  ];
+  document.getElementById("navNextPlayer").addEventListener("click", () => {
+    changePlayer(1);
+  });
 
-  const roster = names.map(n => ({ name: n }));
+  document.getElementById("navPlayerTitle").addEventListener("click", () => {
+    openAllPlayersSelector();
+  });
+</script>
 
-  const key = "team_" + teamName;
-  localStorage.setItem(key, JSON.stringify(roster));
+<!-- 9. GEMINI HELPER -->
+<script data-chunk="gemini-client">
+  async function geminiEvaluateBatch(payload) {
+    const res = await fetch("/api/evaluate-media", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  alert("Team seeded: " + teamName);
-}
+    if (!res.ok) {
+      throw new Error("Gemini batch evaluation failed");
+    }
 
+    return await res.json();
+  }
+
+  async function geminiEvaluateSingle({ playerId, teamId, category, sessionIndex, attachment }) {
+    const payload = {
+      playerId,
+      teamId,
+      category,
+      sessionIndex,
+      attachments: [
+        {
+          id: attachment.id,
+          url: attachment.url,
+          type: attachment.type
+        }
+      ]
+    };
+
+    const result = await geminiEvaluateBatch(payload);
+
+    // Return the single result directly
+    return result.results[0];
+  }
+</script>
+
+<!-- 10. DRIVER CODE (LAST) -->
+<script data-chunk="driver-code">
+  normalizeAllPlayers();
+  buildPlayersTable();
+  renderTeamList();
+  initCircleListeners();
+  initProgressSwipeListeners();
 </script>
 
 </body>
-
-
-
+</html>

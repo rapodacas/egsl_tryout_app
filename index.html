@@ -581,6 +581,19 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     background: #e53935;
   }
 
+  .upload-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -768,6 +781,10 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 <button id="migrateTeamsBtn" class="danger-button">
   Migrate Old Teams
 </button>
+
+<div id="uploadOverlay" class="hidden upload-overlay">
+  Uploading…
+</div>
 
 <!-- 1. CONFIG & GLOBALS -->
 <script data-chunk="config-and-globals">
@@ -1834,119 +1851,182 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
 <!-- 6. MEDIA, ATTACHMENTS, PURGE -->
 <script data-chunk="media-and-attachments">
-  // NOTE: in production this should live server-side, not in client JS.
-  const SERVICE_ACCOUNT = {
-    client_email: "beast-mode-drive-service@beast-mode-media-backend.iam.gserviceaccount.com",
-    private_key: `-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgzb+YhEXI/Nu3\nxihRSfSyV53KwXF46XZ/rpCwJ9MvCrOKCtQ0gSIUq03hbhBoTxX8PboDzSmfVr9I\nhmkf9X38WLHRAkbv93SaXZKmnWM0dsPUjaIpOw4jUYu0prVXtDy6Ee32M74wjBhu\nR1APsQyLiGRvOsT+63Hzdw/783wMRgD3glKGmhCOZVa81pbtYeyY9k9ZmIPYLatK\n6y6PhdH6S2HkR2Ig6H3ihz4JtpPCRQwbX9d2xF6pIAsDxQRvTotxWNV8DHeDzRas\nzw1GTY+TzKWg/sr2IymZUcvL/P8dUaVF+BhgH3BMQaiq4d1SDYBglM0dFvnF40/z\nburwZlfhAgMBAAECggEAB1SsMfeBLvDIG34alZNC+WQhKJDeNN5bP8HAsbl163/z\nZI0YHck4uWI3AmzJP9gdbwqyf2FL4VNwgh/p+ma4raCupf/JbvaWdWaIYUeR1oNQ\nIr8X8AVBfAfaPcLz2gZK6LirYxiMyIk6e+WxhPfmL15EuCn8StGr3IJrCiEiqb2l\nzg6bzZxxHs4jG3kDfC0+33I6r213aVdFbR047pAzx7K7T/XoxmXWcQJj1tAaxUpJ\nZW7MF8hl5l11VRSCboOt18nUiw6ZeZ4o6IstAvlMe5egjQN78ZvF4TlAeSP5WA6Q\nXQ98Vv4cbwBaACgjchyaai44y+/HC2SDN8xCCa3N2QKBgQDghNSFlGOXP4XS38w6\nmjnstiLddwVO05iEgGiExgaJJo4bPcN7GHVefNyH7CUJqwvGsupLjRS/b7MIABv3\nLcHuUDXe7GyGW+yZIAzalGViShOA5U56IDEsmwcadLKj28j8abO/UbK77JpOKuA1\n+SNjwOBUWmhJWAFZ12ijdNnYawKBgQC3WdgRLlFQ57lU92V4mLfb7/ONjcJVwOgz\nEnQ9ZxVfs3pt2+bqNrc01/KD+QwgxoQ5BSWVJDo8vpXMhZ7DNelE3xC4f6N4fmZ6\n3r0rJFR6uBl9QFMuP4IOF/986uX3a0H4h6w/oNtop+dojsG35lBTIBQu1o+WYP6Z\n3LZJ6WKT4wKBgQDGVPB7s9KqGEY6OtJpbjX/IgH4ixxYPtj7K4eoylmZrEJaVBwr\n0DZWKoyRUYyCVuPHOeN4q/8JAT4wshACMRygTaDY9RcFNYzy03onWHGa+v7xnR7P\nCUMHOUd0GmR4FT4do65SMnRmR6MjrAJ2C0g05XwFZ/u51pES8RORWTbbUwKBgF1L\nPvEHE2NKdXgxZhVmB+/GebQmVKMTxFLwaeswf6Sxi3NI+IdmjfQ6iXDzkWM//9mP\nr97ijyuHgmuN9gm4bdiYdEac084k6vpMSg8grke/U2DzESAwOnn3Zg3m7Frn3aqb\nRl8d92aaQNpoAVQUwfx6DysCDA/ljMc3kh2rvngnAoGASI8BScKdXlhgB4gKE8A8\nlhKEwHwKP5CRQD0E2Nhgmg0bwLO+UgIX7zxJ5sDG0vOoyvTvc/9HJTJY8PFRp4IW\nrI9UPbqN+F4tvucNLOwiOvFV5L7aqAzdy4cwmWsIq02G6RFVVC/10YSFE+LSRL+K\nWxR2wlQ/qPvFHS/VDM+3mys=\n-----END PRIVATE KEY-----\n`
-  };
-
-  async function uploadToSupabase(file, filename, playerId) {
-    const form = new FormData();
-    form.append("file", file);
-    form.append("filename", filename);
-    form.append("playerId", playerId);
-    form.append("mimeType", file.type);
-
-    const res = await fetch(`${API_BASE}/upload`, {
-      method: "POST",
-      body: form
-    });
-
-    if (!res.ok) throw new Error("Upload failed");
-
-    return await res.json();
-  }
-
   document.getElementById("fileInput").addEventListener("change", handleFileSelected);
 
   async function handleFileSelected(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const overlay = document.getElementById("uploadOverlay");
 
-    const category = e.target.dataset.category;
-    if (!category) {
-      console.error("No category associated with file input");
-      return;
+    try {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const category = e.target.dataset.category;
+      if (!category) {
+        console.error("No category associated with file input");
+        return;
+      }
+
+      // Show overlay
+      overlay.classList.remove("hidden");
+
+      if (!progressState[category]) {
+        console.warn("progressState missing for category, initializing default");
+        progressState[category] = { index: 0 };
+      }
+      const index = progressState[category].index;
+      const player = players[current];
+      const records = player.progress[category];
+      const record = records[index];
+
+      const timestamp = new Date().toISOString();
+      const clipNumber = nextClipNumber(record);
+
+      const filename = buildAttachmentFilename({
+        timestamp,
+        category,
+        sessionId: record.sessionId,
+        clipNumber,
+        file
+      });
+
+      // 1) Ask backend for signed upload URL + public URL
+      const metaRes = await fetch(`${API_BASE}/upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerId: player.id,
+          sessionId: record.sessionId,
+          category,
+          filename,
+          mimeType: file.type
+        })
+      });
+
+      if (!metaRes.ok) {
+        console.error("Failed to get upload URL", await metaRes.text());
+        alert("Failed to prepare upload.");
+        return;
+      }
+
+      const { path, uploadUrl, publicUrl, contentType } = await metaRes.json();
+
+      // 2) Upload file directly to Supabase using signed URL
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": contentType || file.type
+        },
+        body: file
+      });
+
+      if (!uploadRes.ok) {
+        console.error("Direct upload to Supabase failed", await uploadRes.text());
+        alert("Upload failed.");
+        return;
+      }
+
+      // 3) Build attachment metadata (same shape as before)
+      const attachment = {
+        id: crypto.randomUUID(),
+        type: file.type.startsWith("video") ? "video" : "image",
+        supabasePath: path,
+        url: publicUrl,
+        playerId: player.id,
+        category,
+        sessionId: record.sessionId,
+        timestamp,
+        clipNumber,
+        gemini: {
+          evaluated: false,
+          summary: null,
+          keyPoints: [],
+          score: null,
+          rawResponse: null
+        },
+        purged: false
+      };
+
+      record.media.attachments.push(attachment);
+      save();
+
+      renderProgressPanel(category);
+
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Upload failed.");
+    } finally {
+      // Always hide overlay
+      overlay.classList.add("hidden");
+
+      // Reset input so same file can be selected again
+      if (e.target) e.target.value = "";
     }
-    if (!progressState[category]) {
-      console.warn("progressState missing for category, initializing default");
-      progressState[category] = { index: 0 };
-    }
-    const index = progressState[category].index;
-    const player = players[current];
-    const records = player.progress[category];
-    const record = records[index];
+  }
 
-    const timestamp = new Date().toISOString();
-    const clipNumber = nextClipNumber(record);
+  function handleDirectFileUpload(file, category) {
+    const fakeEvent = { target: { files: [file], dataset: { category } } };
+    handleFileSelected(fakeEvent);
+  }
 
-    const filename = buildAttachmentFilename({
-      timestamp,
-      category,
-      sessionId: record.sessionId,
-      clipNumber,
-      file
-    });
-
-    const form = new FormData();
-    form.append("file", file);
-    form.append("filename", filename);
-    form.append("playerId", player.id);
-    form.append("mimeType", file.type);
-    form.append("sessionId", record.sessionId);
-    form.append("category", category);
-
-    const res = await fetch(`${API_BASE}/upload`, {
-      method: "POST",
-      body: form
-    });
-
-    if (!res.ok) {
-      console.error("Upload failed");
-      return;
-    }
-
-    const { path, publicUrl } = await res.json();
-
-    const attachment = {
-      id: crypto.randomUUID(),
-      type: file.type.startsWith("video") ? "video" : "image",
-      supabasePath: path,
-      url: publicUrl,
-      playerId: player.id,
-      category,
-      sessionId: record.sessionId,
-      timestamp,
-      clipNumber,
-      gemini: {
-        evaluated: false,
-        summary: null,
-        keyPoints: [],
-        score: null,
-        rawResponse: null
+  async function record720pVideo() {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 30 }
       },
-      purged: false
-    };
+      audio: false
+    });
 
-    record.media.attachments.push(attachment);
-    save();
+    const recorder = new MediaRecorder(stream, {
+      mimeType: "video/webm;codecs=vp9"
+    });
 
-    renderProgressPanel(category);
+    const chunks = [];
+    recorder.ondataavailable = e => chunks.push(e.data);
+
+    recorder.start();
+
+    return new Promise(resolve => {
+      setTimeout(() => {
+        recorder.stop();
+        stream.getTracks().forEach(t => t.stop());
+      }, 5000); // 5 seconds max
+      recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
+    });
   }
 
-  async function nuclearPurge() {
-    await fetch(`${API_BASE}/purge-all`, { method: "POST" });
+async function nuclearPurge() {
+  const allPaths = [];
 
-    purgeAllLocalAttachments();
-
-    progressState = {};
-    current = 0;
-
-    const firstCategory = Object.keys(RATING_CONFIGS[1])[0];
-    progressState[firstCategory] = { index: 0 };
-
-    renderProgressPanel(firstCategory);
+  for (const player of players) {
+    for (const category in player.progress) {
+      for (const record of player.progress[category]) {
+        for (const att of record.media.attachments) {
+          if (att.supabasePath) allPaths.push(att.supabasePath);
+        }
+      }
+    }
   }
+
+  if (allPaths.length > 0) {
+    await fetch(`${API_BASE}/delete-media`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paths: allPaths })
+    });
+  }
+
+  purgeAllLocalAttachments();
+
+  progressState = {};
+  current = 0;
+
+  const firstCategory = Object.keys(RATING_CONFIGS[1])[0];
+  progressState[firstCategory] = { index: 0 };
+
+  renderProgressPanel(firstCategory);
+}
 
   function purgeAllLocalAttachments() {
     for (const player of players) {
@@ -2242,12 +2322,15 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       modal.classList.add("hidden");
     };
 
-    document.getElementById("addPhotoVideoBtn").onclick = () => {
+    document.getElementById("addPhotoVideoBtn").onclick = async () => {
       modal.classList.add("hidden");
 
+      const blob = await record720pVideo();
+      const file = new File([blob], "clip.webm", { type: blob.type });
       const input = document.getElementById("fileInput");
       input.dataset.category = category;
-      input.click();
+
+      handleDirectFileUpload(file, category);
     };
 
     document.getElementById("addNoteBtn").onclick = () => {
@@ -2730,10 +2813,10 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 <!-- 10. DRIVER CODE (LAST) -->
 <script data-chunk="driver-code">
   normalizeAllPlayers();
-  buildPlayersTable();
   renderTeamList();
   initCircleListeners();
   initProgressSwipeListeners();
+  buildPlayersTable();
 </script>
 
 </body>

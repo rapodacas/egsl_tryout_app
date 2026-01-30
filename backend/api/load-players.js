@@ -15,7 +15,7 @@ module.exports = withCors(async (req, res) => {
 
   const { data, error } = await supabase
     .from("players")
-    .select("*")
+    .select("id, team_id, data")
     .eq("team_id", teamId);
 
   if (error) {
@@ -23,5 +23,12 @@ module.exports = withCors(async (req, res) => {
     return res.status(500).json({ error: "Failed to load players" });
   }
 
-  return res.status(200).json(data);
+  // ⭐ Transform DB rows → frontend player objects
+  const players = data.map(row => ({
+    ...row.data,          // spread the actual player fields
+    id: row.id,           // preserve id
+    teamId: row.team_id   // preserve teamId
+  }));
+
+  return res.status(200).json(players);
 });

@@ -1097,16 +1097,44 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
 <!-- 4. TEAM MANAGEMENT & CSV -->
 <script data-chunk="team-management-and-csv">
-  function getTeamNames() {
+  async function getTeamNames() {
     const raw = localStorage.getItem("teamNames");
-    return raw ? JSON.parse(raw) : [];
+
+    // If we already have teams locally → return them immediately
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        console.warn("Corrupt teamNames in localStorage, resetting");
+      }
+    }
+
+    // Otherwise fetch from backend
+    const teams = await fetchTeamsFromDatabase();
+
+    // Persist locally for future loads
+    localStorage.setItem("teamNames", JSON.stringify(teams));
+
+    return teams;
   }
 
-  function renderTeamList() {
+  async function fetchTeamsFromDatabase() {
+    try {
+      const res = await fetch("/api/list-teams");
+      if (!res.ok) throw new Error("Failed to fetch teams");
+      const data = await res.json();
+      return data.teams || [];
+    } catch (err) {
+      console.error("Error fetching teams:", err);
+      return [];
+    }
+  }
+
+  async function renderTeamList() {
     const container = document.getElementById("teamList");
     container.innerHTML = "";
 
-    const names = getTeamNames();
+    const names = await getTeamNames();
     if (names.length === 0) {
       const empty = document.createElement("div");
       empty.className = "team-empty";
@@ -1133,7 +1161,15 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     const name = input.value.trim();
     if (!name) return;
 
-    const names = getTeamNames();
+    // Save to backend
+    await fetch("/api/create-team", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamName: name })
+    });
+
+    // Update local cache
+    const names = await getTeamNames();
     if (!names.includes(name)) {
       names.push(name);
       localStorage.setItem("teamNames", JSON.stringify(names));

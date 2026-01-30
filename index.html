@@ -796,6 +796,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
   let currentTeamName = null;
   let currentTeamKey = null;
+  let currentTeamId = null;
   let players = [];
   let current = 0;
   let sortState = { column: null, direction: 1 };
@@ -853,20 +854,20 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   }
 
   // ⭐ Unified save endpoint (single or many)
-  async function savePlayers(players, teamId) {
-    if (!teamId) {
+  async function savePlayers(players) {
+    if (!currentTeamId) {
       console.error("savePlayers requires teamId");
       return false;
     }
 
     // Update local cache
-    localStorage.setItem("team_" + teamId, JSON.stringify(players));
+    localStorage.setItem("team_" + currentTeamId, JSON.stringify(players));
 
     // Send to backend
     const res = await fetch(`${API_BASE}/save-players`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ players, teamId })
+      body: JSON.stringify({ players, currentTeamId })
     });
 
     if (!res.ok) {
@@ -878,14 +879,14 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   }
 
   // ⭐ Save a single player using the unified endpoint
-  async function savePlayer(player, teamId) {
-    if (!teamId) {
+  async function savePlayer(player) {
+    if (!currentTeamId) {
       console.error("savePlayer requires teamId");
       return false;
     }
 
     // Load current cache
-    const key = "team_" + teamId;
+    const key = "team_" + currentTeamId;
     const cached = JSON.parse(localStorage.getItem(key) || "[]");
 
     const idx = cached.findIndex(p => p.id === player.id);
@@ -893,7 +894,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     else cached.push(player);
 
     // Delegate to unified save
-    return await savePlayers(cached, teamId);
+    return await savePlayers(cached, currentTeamId);
   }
 
   // ⭐ Seed team using UUID teamId (NOT team name)
@@ -925,7 +926,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       throws: ""
     }));
 
-    await savePlayers(roster, teamId);
+    await savePlayers(roster);
     players = roster;
 
     alert("Team seeded!");

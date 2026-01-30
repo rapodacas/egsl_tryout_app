@@ -860,6 +860,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       return false;
     }
 
+    let teamId = currentTeamKey;
     // Update local cache
     localStorage.setItem("team_" + currentTeamId, JSON.stringify(players));
 
@@ -867,7 +868,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     const res = await fetch(`${API_BASE}/save-players`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ players, currentTeamId })
+      body: JSON.stringify({ players, teamId })
     });
 
     if (!res.ok) {

@@ -1079,6 +1079,8 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 <!-- 4. TEAM MANAGEMENT & CSV -->
 <script data-chunk="team-management-and-csv">
   async function migrateLocalTeams() {
+    // Remove messed up team
+    JSON.parse(localStorage.getItem("team_d609bf49-b995-46e0-8b67-a89956312190"))[0].name=="Player 1" && localStorage.setItem("team_d609bf49-b995-46e0-8b67-a89956312190", null)
     const raw = localStorage.getItem("teamNames");
     const alreadyMigrated = localStorage.getItem("teams");
 

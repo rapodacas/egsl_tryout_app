@@ -2,35 +2,32 @@
 const { supabase } = require("../lib/supabase");
 const { withCors } = require("./_cors");
 
-module.exports = withCors(async function handler(req, res) {
+module.exports = withCors(async (req, res) => {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  let players;
+  const { players, teamId } = req.body;
 
-  try {
-    // If req.body is already an object, use it.
-    // If it's a string, parse it.
-    players = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-  } catch (err) {
-    console.error("JSON parse error:", err);
-    return res.status(400).json({ error: "Invalid JSON" });
+  if (!teamId) {
+    return res.status(400).json({ error: "Missing teamId" });
   }
 
-  if (!Array.isArray(players)) {
-    return res.status(400).json({ error: "Expected an array of players" });
+  if (!Array.isArray(players) || players.length === 0) {
+    return res.status(400).json({ error: "players must be a non-empty array" });
   }
 
+  // Normalize rows for Supabase upsert
   const rows = players.map(p => ({
     id: p.id,
-    team_id: p.teamId || null,
-    data: p
+    team_id: teamId,
+    data: p,
+    updated_at: new Date().toISOString()
   }));
 
   const { error } = await supabase
     .from("players")
-    .upsert(rows, { onConflict: "id" });
+    .upsert(rows);
 
   if (error) {
     console.error("save-players error:", error);

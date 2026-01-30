@@ -765,6 +765,10 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   <div class="attachment-viewer-content" id="attachmentViewerContent"></div>
 </div>
 
+<button id="migrateTeamsBtn" class="danger-button">
+  Migrate Old Teams
+</button>
+
 <!-- 1. CONFIG & GLOBALS -->
 <script data-chunk="config-and-globals">
   const API_BASE = "https://egsl-tryout-app.vercel.app/api";
@@ -805,66 +809,64 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
 <!-- 2. DATA STORE & BACKEND API -->
 <script data-chunk="data-store-and-api">
-  async function loadPlayers(teamId = null) {
-    const cached = localStorage.getItem("players");
-    if (cached) {
+  async function loadPlayers(teamId) {
+    const key = "team_" + teamId;
+
+    // 1. Try local cache first
+    const raw = localStorage.getItem(key);
+    if (raw) {
       try {
-        const parsed = JSON.parse(cached);
-        refreshPlayers(teamId);
-        return parsed;
-      } catch (e) {
-        console.warn("Bad cached players, ignoring");
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        console.warn("Corrupt local players for", teamId, "— refetching");
       }
     }
-    return await refreshPlayers(teamId);
+
+    // 2. Fetch from backend
+    const res = await fetch(`/api/load-players?teamId=${teamId}`);
+    if (!res.ok) throw new Error("Failed to load players");
+
+    const players = await res.json();
+
+    // 3. Cache for future fast loads
+    localStorage.setItem(key, JSON.stringify(players));
+
+    return players;
   }
 
-  async function refreshPlayers(teamId = null) {
-    const url = teamId
-      ? `${API_BASE}/load-players?teamId=${encodeURIComponent(teamId)}`
-      : `${API_BASE}/load-players`;
+  async function refreshPlayers(teamId) {
+    if (!teamId) {
+      console.error("refreshPlayers requires a teamId");
+      return [];
+    }
 
-    const res = await fetch(url);
+    const res = await fetch(`/api/load-players?teamId=${teamId}`);
     if (!res.ok) {
-      console.error("Failed to load players");
+      console.error("Failed to refresh players");
       return [];
     }
 
     const loaded = await res.json();
-    localStorage.setItem("players", JSON.stringify(loaded));
+    localStorage.setItem("team_" + teamId, JSON.stringify(loaded));
     return loaded;
   }
 
-  async function savePlayer(player) {
-    const cached = JSON.parse(localStorage.getItem("players") || "[]");
-    const idx = cached.findIndex(p => p.id === player.id);
-
-    if (idx >= 0) cached[idx] = player;
-    else cached.push(player);
-
-    localStorage.setItem("players", JSON.stringify(cached));
-
-    const res = await fetch(`${API_BASE}/save-player`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(player)
-    });
-
-    if (!res.ok) {
-      console.error("Failed to save player", await res.text());
+  // ⭐ Unified save endpoint (single or many)
+  async function savePlayers(players, teamId) {
+    if (!teamId) {
+      console.error("savePlayers requires teamId");
       return false;
     }
 
-    return true;
-  }
+    // Update local cache
+    localStorage.setItem("team_" + teamId, JSON.stringify(players));
 
-  async function saveAllPlayers(playersToSave) {
-    localStorage.setItem("players", JSON.stringify(playersToSave));
-
-    const res = await fetch(`${API_BASE}/save-players`, {
+    // Send to backend
+    const res = await fetch(`/api/save-players`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(playersToSave)
+      body: JSON.stringify({ players, teamId })
     });
 
     if (!res.ok) {
@@ -875,81 +877,58 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     return true;
   }
 
-  async function seedTeam(teamName) {
+  // ⭐ Save a single player using the unified endpoint
+  async function savePlayer(player, teamId) {
+    if (!teamId) {
+      console.error("savePlayer requires teamId");
+      return false;
+    }
+
+    // Load current cache
+    const key = "team_" + teamId;
+    const cached = JSON.parse(localStorage.getItem(key) || "[]");
+
+    const idx = cached.findIndex(p => p.id === player.id);
+    if (idx >= 0) cached[idx] = player;
+    else cached.push(player);
+
+    // Delegate to unified save
+    return await savePlayers(cached, teamId);
+  }
+
+  // ⭐ Seed team using UUID teamId (NOT team name)
+  async function seedTeam(teamId) {
     const names = [
-      "ILeiana Aguilar",
-      "Jana Almasri",
-      "Juliet Apodaca",
-      "Alannah Arguello",
-      "Shealey Belardes",
-      "Alexis Berggren",
-      "Katelyn Borecky",
-      "Cambria Brosnan",
-      "Angela Calixto",
-      "Natalie Cervantes",
-      "Penelope Cuevas",
-      "Avery Dean",
-      "Alyson Eden",
-      "Adeline Esquivel",
-      "Lily Esquivel",
-      "Aryanna Fernandez",
-      "Harper Flores",
-      "Kaylee Flores",
-      "Haley Franco",
-      "Evelyn Gardino",
-      "Maddison Garcia",
-      "Cora Gottlieb",
-      "Tavyn Green",
-      "Jaedyn Kandyce Grill",
-      "Leilani Hernandez",
-      "Kara Hutchinson",
-      "Lilyana Jordan",
-      "Aria Lopez",
-      "Bella Lopez",
-      "Bianca Lopez",
-      "Noelle Marquez",
-      "Caroline McDonald",
-      "Mila Medina",
-      "Samantha Mendoza",
-      "Dryden Miyajima",
-      "Kennedy Moralez",
-      "Madison Murphy",
-      "Hannah Nack",
-      "Leiyanah Paipa",
-      "Victoria Parker",
-      "Khloe Pettit",
-      "Katalina Ponce",
-      "Cierra Prieto",
-      "Madison Pulver",
-      "Aiyana Renteria",
-      "Kaylee Rhodes",
-      "Alysse Robles",
-      "Daliah Sanchez",
-      "Savannah Springsteen",
-      "Riley Tanner",
-      "Evelyn Tellez",
-      "Isabel Torres",
-      "Noshla Turner",
-      "Uushla Turner",
-      "Ariyana Ari Tyler",
-      "Olivia Vallejos",
-      "Stella Vega",
-      "Amelia Webber",
-      "Gloria Wiebel"
+      "ILeiana Aguilar", "Jana Almasri", "Juliet Apodaca", "Alannah Arguello",
+      "Shealey Belardes", "Alexis Berggren", "Katelyn Borecky", "Cambria Brosnan",
+      "Angela Calixto", "Natalie Cervantes", "Penelope Cuevas", "Avery Dean",
+      "Alyson Eden", "Adeline Esquivel", "Lily Esquivel", "Aryanna Fernandez",
+      "Harper Flores", "Kaylee Flores", "Haley Franco", "Evelyn Gardino",
+      "Maddison Garcia", "Cora Gottlieb", "Tavyn Green", "Jaedyn Kandyce Grill",
+      "Leilani Hernandez", "Kara Hutchinson", "Lilyana Jordan", "Aria Lopez",
+      "Bella Lopez", "Bianca Lopez", "Noelle Marquez", "Caroline McDonald",
+      "Mila Medina", "Samantha Mendoza", "Dryden Miyajima", "Kennedy Moralez",
+      "Madison Murphy", "Hannah Nack", "Leiyanah Paipa", "Victoria Parker",
+      "Khloe Pettit", "Katalina Ponce", "Cierra Prieto", "Madison Pulver",
+      "Aiyana Renteria", "Kaylee Rhodes", "Alysse Robles", "Daliah Sanchez",
+      "Savannah Springsteen", "Riley Tanner", "Evelyn Tellez", "Isabel Torres",
+      "Noshla Turner", "Uushla Turner", "Ariyana Ari Tyler", "Olivia Vallejos",
+      "Stella Vega", "Amelia Webber", "Gloria Wiebel"
     ];
 
     const roster = names.map(n => ({
       id: crypto.randomUUID(),
-      teamId: teamName,
+      teamId,        // UUID now
       name: n,
       progress: {},
       notes: "",
       throws: ""
     }));
 
-    await saveAllPlayers(roster);
+    await savePlayers(roster, teamId);
     players = roster;
-    alert("Team seeded: " + teamName);
+
+    alert("Team seeded!");
   }
 </script>
 
@@ -1097,25 +1076,107 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
 <!-- 4. TEAM MANAGEMENT & CSV -->
 <script data-chunk="team-management-and-csv">
-  async function getTeamNames() {
+  async function migrateLocalTeams() {
     const raw = localStorage.getItem("teamNames");
+    const alreadyMigrated = localStorage.getItem("teams");
 
-    // If we already have teams locally → return them immediately
+    // If already migrated → do nothing
+    if (alreadyMigrated) {
+      console.log("Teams already migrated — skipping");
+      return;
+    }
+
+    // Nothing to migrate
+    if (!raw) {
+      console.log("No legacy teamNames found — skipping migration");
+      return;
+    }
+
+    let names;
+    try {
+      names = JSON.parse(raw);
+    } catch {
+      console.warn("Corrupt teamNames JSON — aborting migration");
+      return;
+    }
+
+    // Must be a non-empty array of strings
+    if (!Array.isArray(names) || names.length === 0) {
+      console.log("Legacy teamNames empty — skipping migration");
+      return;
+    }
+
+    // Fetch real teams from backend
+    const res = await fetch("/api/list-teams");
+    if (!res.ok) {
+      console.error("Failed to fetch teams from backend — migration aborted");
+      return;
+    }
+
+    const { teams } = await res.json();
+
+    if (!Array.isArray(teams) || teams.length === 0) {
+      console.warn("Backend returned no teams — migration aborted");
+      return;
+    }
+
+    // Map old names → new objects (best effort)
+    const mapped = names
+      .map(n => teams.find(t => t.name === n))
+      .filter(Boolean);
+
+    if (mapped.length === 0) {
+      console.warn("No matching teams found for legacy names — migration aborted");
+      return;
+    }
+
+    // Save new structure
+    localStorage.setItem("teams", JSON.stringify(mapped));
+    localStorage.removeItem("teamNames");
+
+    console.log("Migration complete:", mapped);
+  }
+
+  document.getElementById("migrateTeamsBtn").addEventListener("click", async () => {
+    await migrateLocalTeams();
+    alert("Migration complete!");
+    renderTeamList();
+  });
+
+  if (localStorage.getItem("teams")) {
+    document.getElementById("migrateTeamsBtn").disabled = true;
+    document.getElementById("migrateTeamsBtn").textContent = "Teams Already Migrated";
+  }
+
+  async function getTeams() {
+    const raw = localStorage.getItem("teams");
+
     if (raw) {
       try {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+
+        // Validate: must be array of {id, name}
+        if (
+          Array.isArray(parsed) &&
+          parsed.every(t => t && typeof t.id === "string" && typeof t.name === "string")
+        ) {
+          return parsed;
+        }
       } catch {
-        console.warn("Corrupt teamNames in localStorage, resetting");
+        console.warn("Corrupt teams in localStorage, resetting...");
       }
     }
 
-    // Otherwise fetch from backend
+    // Fetch from backend
     const teams = await fetchTeamsFromDatabase();
 
-    // Persist locally for future loads
-    localStorage.setItem("teamNames", JSON.stringify(teams));
+    // Persist only if valid
+    if (Array.isArray(teams)) {
+      localStorage.setItem("teams", JSON.stringify(teams));
+      return teams;
+    }
 
-    return teams;
+    return [];
   }
 
   async function fetchTeamsFromDatabase() {
@@ -1134,8 +1195,9 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     const container = document.getElementById("teamList");
     container.innerHTML = "";
 
-    const names = await getTeamNames();
-    if (names.length === 0) {
+    const teams = await getTeams();
+
+    if (teams.length === 0) {
       const empty = document.createElement("div");
       empty.className = "team-empty";
       empty.textContent = "No teams yet. Create one below.";
@@ -1143,13 +1205,13 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       return;
     }
 
-    names.forEach(name => {
+    teams.forEach(team => {
       const div = document.createElement("div");
       div.className = "team-item";
-      div.textContent = name;
+      div.textContent = team.name;
 
       div.addEventListener("click", () => {
-        selectTeam(name);
+        selectTeam(team.id, team.name);
       });
 
       container.appendChild(div);
@@ -1181,11 +1243,11 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     await seedTeam(name);
   }
 
-  async function selectTeam(teamName) {
+  async function selectTeam(teamId, teamName) {
+    currentTeamId = teamId;
     currentTeamName = teamName;
-    currentTeamKey = "team_" + teamName;
 
-    players = await loadPlayers(teamName);
+    players = await loadPlayers(teamId);
     current = 0;
 
     document.getElementById("teamSelectScreen").classList.add("hidden");

@@ -2,27 +2,26 @@
 const { supabase } = require("../lib/supabase");
 const { withCors } = require("./_cors");
 
-module.exports = withCors(async function handler(req, res) {
+module.exports = withCors(async (req, res) => {
   if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method Not Allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const teamId = req.query.teamId;
+  const { teamId } = req.query;
 
-  let query = supabase.from("players").select("data");
-
-  if (teamId) {
-    query = query.eq("team_id", teamId);
+  if (!teamId) {
+    return res.status(400).json({ error: "Missing teamId" });
   }
 
-  const { data, error } = await query;
+  const { data, error } = await supabase
+    .from("players")
+    .select("*")
+    .eq("team_id", teamId);
 
   if (error) {
     console.error("load-players error:", error);
     return res.status(500).json({ error: "Failed to load players" });
   }
 
-  const players = data.map(row => row.data);
-
-  return res.status(200).json(players);
+  return res.status(200).json(data);
 });

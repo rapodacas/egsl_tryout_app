@@ -824,7 +824,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     }
 
     // 2. Fetch from backend
-    const res = await fetch(`/api/load-players?teamId=${teamId}`);
+    const res = await fetch(`${API_BASE}/load-players?teamId=${teamId}`);
     if (!res.ok) throw new Error("Failed to load players");
 
     const players = await res.json();
@@ -841,7 +841,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       return [];
     }
 
-    const res = await fetch(`/api/load-players?teamId=${teamId}`);
+    const res = await fetch(`${API_BASE}/load-players?teamId=${teamId}`);
     if (!res.ok) {
       console.error("Failed to refresh players");
       return [];
@@ -863,7 +863,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     localStorage.setItem("team_" + teamId, JSON.stringify(players));
 
     // Send to backend
-    const res = await fetch(`/api/save-players`, {
+    const res = await fetch(`${API_BASE}/save-players`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ players, teamId })
@@ -1107,7 +1107,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     }
 
     // Fetch real teams from backend
-    const res = await fetch("/api/list-teams");
+    const res = await fetch(`${API_BASE}/list-teams`);
     if (!res.ok) {
       console.error("Failed to fetch teams from backend — migration aborted");
       return;
@@ -1181,7 +1181,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 
   async function fetchTeamsFromDatabase() {
     try {
-      const res = await fetch("/api/list-teams");
+      const res = await fetch(`${API_BASE}/list-teams`);
       if (!res.ok) throw new Error("Failed to fetch teams");
       const data = await res.json();
       return data.teams || [];
@@ -1224,7 +1224,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     if (!name) return;
 
     // Save to backend
-    await fetch("/api/create-team", {
+    await fetch(`${API_BASE}/create-team`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teamName: name })
@@ -1836,20 +1836,6 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     private_key: `-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCgzb+YhEXI/Nu3\nxihRSfSyV53KwXF46XZ/rpCwJ9MvCrOKCtQ0gSIUq03hbhBoTxX8PboDzSmfVr9I\nhmkf9X38WLHRAkbv93SaXZKmnWM0dsPUjaIpOw4jUYu0prVXtDy6Ee32M74wjBhu\nR1APsQyLiGRvOsT+63Hzdw/783wMRgD3glKGmhCOZVa81pbtYeyY9k9ZmIPYLatK\n6y6PhdH6S2HkR2Ig6H3ihz4JtpPCRQwbX9d2xF6pIAsDxQRvTotxWNV8DHeDzRas\nzw1GTY+TzKWg/sr2IymZUcvL/P8dUaVF+BhgH3BMQaiq4d1SDYBglM0dFvnF40/z\nburwZlfhAgMBAAECggEAB1SsMfeBLvDIG34alZNC+WQhKJDeNN5bP8HAsbl163/z\nZI0YHck4uWI3AmzJP9gdbwqyf2FL4VNwgh/p+ma4raCupf/JbvaWdWaIYUeR1oNQ\nIr8X8AVBfAfaPcLz2gZK6LirYxiMyIk6e+WxhPfmL15EuCn8StGr3IJrCiEiqb2l\nzg6bzZxxHs4jG3kDfC0+33I6r213aVdFbR047pAzx7K7T/XoxmXWcQJj1tAaxUpJ\nZW7MF8hl5l11VRSCboOt18nUiw6ZeZ4o6IstAvlMe5egjQN78ZvF4TlAeSP5WA6Q\nXQ98Vv4cbwBaACgjchyaai44y+/HC2SDN8xCCa3N2QKBgQDghNSFlGOXP4XS38w6\nmjnstiLddwVO05iEgGiExgaJJo4bPcN7GHVefNyH7CUJqwvGsupLjRS/b7MIABv3\nLcHuUDXe7GyGW+yZIAzalGViShOA5U56IDEsmwcadLKj28j8abO/UbK77JpOKuA1\n+SNjwOBUWmhJWAFZ12ijdNnYawKBgQC3WdgRLlFQ57lU92V4mLfb7/ONjcJVwOgz\nEnQ9ZxVfs3pt2+bqNrc01/KD+QwgxoQ5BSWVJDo8vpXMhZ7DNelE3xC4f6N4fmZ6\n3r0rJFR6uBl9QFMuP4IOF/986uX3a0H4h6w/oNtop+dojsG35lBTIBQu1o+WYP6Z\n3LZJ6WKT4wKBgQDGVPB7s9KqGEY6OtJpbjX/IgH4ixxYPtj7K4eoylmZrEJaVBwr\n0DZWKoyRUYyCVuPHOeN4q/8JAT4wshACMRygTaDY9RcFNYzy03onWHGa+v7xnR7P\nCUMHOUd0GmR4FT4do65SMnRmR6MjrAJ2C0g05XwFZ/u51pES8RORWTbbUwKBgF1L\nPvEHE2NKdXgxZhVmB+/GebQmVKMTxFLwaeswf6Sxi3NI+IdmjfQ6iXDzkWM//9mP\nr97ijyuHgmuN9gm4bdiYdEac084k6vpMSg8grke/U2DzESAwOnn3Zg3m7Frn3aqb\nRl8d92aaQNpoAVQUwfx6DysCDA/ljMc3kh2rvngnAoGASI8BScKdXlhgB4gKE8A8\nlhKEwHwKP5CRQD0E2Nhgmg0bwLO+UgIX7zxJ5sDG0vOoyvTvc/9HJTJY8PFRp4IW\nrI9UPbqN+F4tvucNLOwiOvFV5L7aqAzdy4cwmWsIq02G6RFVVC/10YSFE+LSRL+K\nWxR2wlQ/qPvFHS/VDM+3mys=\n-----END PRIVATE KEY-----\n`
   };
 
-  async function uploadToDrive({ file, folderId, filename }) {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folderId", folderId);
-    formData.append("filename", filename);
-
-    const res = await fetch("https://egsl-tryout-app.vercel.app/api/upload", {
-      method: "POST",
-      body: formData
-    });
-
-    return await res.json();
-  }
-
   async function uploadToSupabase(file, filename, playerId) {
     const form = new FormData();
     form.append("file", file);
@@ -1857,7 +1843,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     form.append("playerId", playerId);
     form.append("mimeType", file.type);
 
-    const res = await fetch("/api/upload", {
+    const res = await fetch(`${API_BASE}/upload`, {
       method: "POST",
       body: form
     });
@@ -1906,7 +1892,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
     form.append("sessionId", record.sessionId);
     form.append("category", category);
 
-    const res = await fetch("https://egsl-tryout-app.vercel.app/api/upload", {
+    const res = await fetch(`${API_BASE}/upload`, {
       method: "POST",
       body: form
     });
@@ -1945,7 +1931,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
   }
 
   async function nuclearPurge() {
-    await fetch("https://egsl-tryout-app.vercel.app/api/purge-all", { method: "POST" });
+    await fetch(`${API_BASE}/purge-all`, { method: "POST" });
 
     purgeAllLocalAttachments();
 
@@ -2507,7 +2493,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
       }))
     };
 
-    const res = await fetch("https://egsl-tryout-app.vercel.app/api/evaluate-attachments", {
+    const res = await fetch(`${API_BASE}/evaluate-attachments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -2702,7 +2688,7 @@ input, textarea, label, .player-name, .section-title { font-size: 3.0rem; }
 <!-- 9. GEMINI HELPER -->
 <script data-chunk="gemini-client">
   async function geminiEvaluateBatch(payload) {
-    const res = await fetch("/api/evaluate-media", {
+    const res = await fetch(`${API_BASE}/evaluate-media`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

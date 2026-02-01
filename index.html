@@ -591,7 +591,7 @@
     z-index: 9999;
   }
 
-  .hidden { display: none; }
+  .hidden { display: none !important; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -781,8 +781,15 @@
 </button>
 
 <div id="uploadOverlay" class="hidden upload-overlay">
-  Uploading…
+  <div>
+    <div id="uploadText">Uploading…</div>
+    <div id="uploadBar">
+      <div id="uploadBarFill"></div>
+    </div>
+  </div>
 </div>
+
+<input id="nativeVideoInput" type="file" accept="video/*" capture="camera" class="hidden">
 
 <!-- 1. CONFIG & GLOBALS -->
 <script data-chunk="config-and-globals">
@@ -1908,20 +1915,28 @@
 
       const { path, uploadUrl, publicUrl, contentType } = await metaRes.json();
 
-      // 2) Upload file directly to Supabase using signed URL
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": contentType || file.type
-        },
-        body: file
-      });
+      // 2) Upload directly to Supabase using signed URL with progress
+      const uploadBarFill = document.getElementById("uploadBarFill");
+      uploadBarFill.style.width = "0%";
 
-      if (!uploadRes.ok) {
-        console.error("Direct upload to Supabase failed", await uploadRes.text());
-        alert("Upload failed.");
-        return;
-      }
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.withCredentials = false;
+        xhr.open("PUT", uploadUrl);
+
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable) {
+            const pct = (e.loaded / e.total) * 100;
+            uploadBarFill.style.width = pct + "%";
+          }
+        };
+
+        xhr.onload = () => xhr.status < 300 ? resolve() : reject(xhr.responseText);
+        xhr.onerror = reject;
+
+        xhr.setRequestHeader("Content-Type", contentType || file.type);
+        xhr.send(file);
+      });
 
       // 3) Build attachment metadata (same shape as before)
       const attachment = {
@@ -1994,37 +2009,37 @@
     });
   }
 
-async function nuclearPurge() {
-  const allPaths = [];
+  async function nuclearPurge() {
+    const allPaths = [];
 
-  for (const player of players) {
-    for (const category in player.progress) {
-      for (const record of player.progress[category]) {
-        for (const att of record.media.attachments) {
-          if (att.supabasePath) allPaths.push(att.supabasePath);
+    for (const player of players) {
+      for (const category in player.progress) {
+        for (const record of player.progress[category]) {
+          for (const att of record.media.attachments) {
+            if (att.supabasePath) allPaths.push(att.supabasePath);
+          }
         }
       }
     }
+
+    if (allPaths.length > 0) {
+      await fetch(`${API_BASE}/delete-media`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paths: allPaths })
+      });
+    }
+
+    purgeAllLocalAttachments();
+
+    progressState = {};
+    current = 0;
+
+    const firstCategory = Object.keys(RATING_CONFIGS[1])[0];
+    progressState[firstCategory] = { index: 0 };
+
+    renderProgressPanel(firstCategory);
   }
-
-  if (allPaths.length > 0) {
-    await fetch(`${API_BASE}/delete-media`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paths: allPaths })
-    });
-  }
-
-  purgeAllLocalAttachments();
-
-  progressState = {};
-  current = 0;
-
-  const firstCategory = Object.keys(RATING_CONFIGS[1])[0];
-  progressState[firstCategory] = { index: 0 };
-
-  renderProgressPanel(firstCategory);
-}
 
   function purgeAllLocalAttachments() {
     for (const player of players) {
@@ -2320,14 +2335,20 @@ async function nuclearPurge() {
       modal.classList.add("hidden");
     };
 
-    document.getElementById("addPhotoVideoBtn").onclick = async () => {
+    document.getElementById("addPhotoVideoBtn").onclick = () => {
       modal.classList.add("hidden");
 
-      const blob = await record720pVideo();
-      const file = new File([blob], "clip.webm", { type: blob.type });
-      const input = document.getElementById("fileInput");
-      input.dataset.category = category;
+      const input = document.getElementById("nativeVideoInput");
+      input.dataset.category = category;   // persist category
+      input.value = "";                    // reset so same file can be selected twice
+      input.click();
+    };
 
+    document.getElementById("nativeVideoInput").onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const category = e.target.dataset.category;
       handleDirectFileUpload(file, category);
     };
 

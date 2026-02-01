@@ -2582,67 +2582,6 @@
 
   }
 
-  async function evaluateAttachments(category, sessionIndex, attachments) {
-    if (!attachments || attachments.length === 0) {
-      throw new Error("No attachments provided");
-    }
-
-    const payload = {
-      playerId: players[current].id,
-      teamId: currentTeamName,
-      category,
-      sessionIndex,
-      attachments: attachments.map(a => ({
-        id: a.id,
-        url: a.url,
-        type: a.type
-      }))
-    };
-
-    const res = await fetch(`${API_BASE}/evaluate-attachments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      throw new Error("Gemini evaluation failed");
-    }
-
-    const result = await res.json();
-
-    for (const r of result.results) {
-      const att = attachments.find(a => a.id === r.attachmentId);
-      if (att) att.gemini = r;
-    }
-
-    savePlayer(players[current]);
-
-    return result;
-  }
-
-  async function evaluateCurrentSessionAttachment(category) {
-    const sessionIndex = progressState[category].index;
-    const record = players[current].progress[category][sessionIndex];
-
-    const attachments = record.media?.attachments?.filter(a =>
-      a.type === "image" || a.type === "video"
-    ) || [];
-
-    if (attachments.length === 0) {
-      alert("No photo/video attachments to evaluate.");
-      return;
-    }
-
-    alert(`Evaluating ${attachments.length} attachment(s)...`);
-
-    try {
-      await evaluateAttachments(category, sessionIndex, attachments);
-      alert("Gemini evaluation complete!");
-    } catch (err) {
-      alert(err.message);
-    }
-  }
 
   function initCircleListeners() {
     const allCircles = document.querySelectorAll(".rating-circles .circle");

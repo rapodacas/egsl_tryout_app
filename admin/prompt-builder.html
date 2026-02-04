@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prompt Builder</title>
+  <style>
+    body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 12px;
+    background: #f5f5f7;
+    color: #111827;
+    }
+
+    /* Typography scales slightly on mobile */
+    h1, h2, h3 {
+    margin: 0 0 8px;
+    line-height: 1.2;
+    }
+
+    /* Mobile-first layout */
+    .row {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+    }
+
+    .col {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Desktop: 3-column layout */
+    @media (min-width: 900px) {
+    .row {
+        flex-direction: row;
+    }
+    .col {
+        flex: 1;
+    }
+    .col:first-child {
+        max-width: 260px;
+    }
+    }
+
+    /* Inputs */
+    label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    }
+
+    select,
+    input[type="text"],
+    textarea,
+    button {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 15px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    }
+
+    /* Touch-friendly buttons */
+    button {
+    cursor: pointer;
+    background: #2563eb;
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 12px;
+    }
+
+    button.secondary {
+    background: #e5e7eb;
+    color: #111827;
+    }
+
+    button.small {
+    width: auto;
+    padding: 6px 10px;
+    font-size: 13px;
+    margin-right: 4px;
+    }
+
+    /* Subcategory pills */
+    .subcat-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    font-size: 14px;
+    margin: 0 6px 6px 0;
+    }
+
+    .subcat-pill button {
+    margin-left: 6px;
+    padding: 0 6px;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 16px;
+    }
+
+    /* Version list */
+    .version-row {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+    }
+
+    .version-row:last-child {
+    border-bottom: none;
+    }
+
+    .version-row > div:last-child {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    }
+
+    /* Badges */
+    .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 6px;
+    }
+
+    .badge.active {
+    background: #dcfce7;
+    color: #166534;
+    }
+
+    .badge.draft {
+    background: #e0f2fe;
+    color: #075985;
+    }
+
+    /* Code blocks */
+    pre {
+    background: #111827;
+    color: #e5e7eb;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    overflow: auto;
+    max-height: 260px;
+    }
+
+    /* Error text */
+    .error {
+    color: #b91c1c;
+    font-size: 14px;
+    margin-bottom: 6px;
+    }
+
+    /* Status text */
+    .status {
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #4b5563;
+    }
+
+    /* Make panels scrollable on small screens */
+    .col {
+    max-height: 90vh;
+    overflow-y: auto;
+    }
+
+  </style>
+</head>
+<body>
+<div style="/*max-width: 1200px; margin: 0 auto;*/"> 
+  <h1>Prompt Builder</h1>
+
+  <div class="row">
+    <div class="col" style="max-width: 260px;">
+      <h2>Category & Versions</h2>
+
+      <label for="categorySelect">Category</label>
+      <select id="categorySelect"></select>
+
+      <div class="status" id="versionStatus"></div>
+
+      <div class="versions-list" id="versionsList"></div>
+    </div>
+
+    <div class="col">
+      <h2>Prompt Editor</h2>
+
+      <div id="editorErrors" class="error"></div>
+
+      <label>Subcategories</label>
+      <div id="subcategoriesContainer"></div>
+      <div style="display:flex; gap:4px; margin-bottom:8px;">
+        <input type="text" id="newSubcategoryInput" placeholder="Add subcategory (e.g. swing)" />
+        <button class="small" id="addSubcategoryBtn">Add</button>
+      </div>
+
+      <label for="systemPromptInput">System Prompt</label>
+      <textarea id="systemPromptInput" placeholder="You are an expert youth softball coach..."></textarea>
+
+      <label for="userPromptTemplateInput">User Prompt Template</label>
+      <textarea id="userPromptTemplateInput" placeholder="Frames: {{frames}}&#10;Evaluate swing, power, contact..."></textarea>
+
+      <div class="status">
+        Available variables: <code>{{frames}}</code>
+      </div>
+
+      <button id="saveVersionBtn">Save as New Version & Activate</button>
+    </div>
+
+    <div class="col">
+      <h2>Live Preview</h2>
+      <div class="status">Preview uses placeholder frames JSON.</div>
+
+      <h3>System Prompt</h3>
+      <pre id="previewSystem"></pre>
+
+      <h3>User Prompt</h3>
+      <pre id="previewUser"></pre>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <h2>Test Prompt</h2>
+
+      <div id="testErrors" class="error"></div>
+
+      <label for="testUrlInput">Test Clip URL</label>
+      <input type="text" id="testUrlInput" placeholder="https://..." />
+
+      <label for="testVersionSelect">Version to Test</label>
+      <select id="testVersionSelect"></select>
+
+      <button id="runTestBtn">Run Test Evaluation</button>
+
+      <div class="status" id="testStatus"></div>
+
+      <h3>Result</h3>
+      <pre id="testResult"></pre>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://egsl-tryout-app.vercel.app/api";
+
+    const state = {
+      categories: ["hitting", "pitching", "fielding"], // adjust to your real categories
+      selectedCategory: null,
+      versions: [],
+      activeVersion: null,
+      editingVersion: null,
+      subcategories: [],
+      systemPrompt: "",
+      userPromptTemplate: "",
+      previewFrames: [{ frameIndex: 0, url: "frame0.jpg" }],
+    };
+
+    const els = {
+      categorySelect: document.getElementById("categorySelect"),
+      versionStatus: document.getElementById("versionStatus"),
+      versionsList: document.getElementById("versionsList"),
+      subcategoriesContainer: document.getElementById("subcategoriesContainer"),
+      newSubcategoryInput: document.getElementById("newSubcategoryInput"),
+      addSubcategoryBtn: document.getElementById("addSubcategoryBtn"),
+      systemPromptInput: document.getElementById("systemPromptInput"),
+      userPromptTemplateInput: document.getElementById("userPromptTemplateInput"),
+      saveVersionBtn: document.getElementById("saveVersionBtn"),
+      previewSystem: document.getElementById("previewSystem"),
+      previewUser: document.getElementById("previewUser"),
+      editorErrors: document.getElementById("editorErrors"),
+      testUrlInput: document.getElementById("testUrlInput"),
+      testVersionSelect: document.getElementById("testVersionSelect"),
+      runTestBtn: document.getElementById("runTestBtn"),
+      testResult: document.getElementById("testResult"),
+      testErrors: document.getElementById("testErrors"),
+      testStatus: document.getElementById("testStatus"),
+    };
+
+    function init() {
+      // Populate categories
+      els.categorySelect.innerHTML = state.categories
+        .map(cat => `<option value="${cat}">${cat}</option>`)
+        .join("");
+      state.selectedCategory = state.categories[0];
+      els.categorySelect.value = state.selectedCategory;
+
+      els.categorySelect.addEventListener("change", () => {
+        state.selectedCategory = els.categorySelect.value;
+        loadCategoryPrompts();
+      });
+
+      els.addSubcategoryBtn.addEventListener("click", addSubcategory);
+      els.newSubcategoryInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addSubcategory();
+        }
+      });
+
+      els.systemPromptInput.addEventListener("input", () => {
+        state.systemPrompt = els.systemPromptInput.value;
+        renderPreview();
+      });
+
+      els.userPromptTemplateInput.addEventListener("input", () => {
+        state.userPromptTemplate = els.userPromptTemplateInput.value;
+        renderPreview();
+      });
+
+      els.saveVersionBtn.addEventListener("click", saveNewVersion);
+      els.runTestBtn.addEventListener("click", runTestEvaluation);
+
+      loadCategoryPrompts();
+    }
+
+    async function loadCategoryPrompts() {
+      resetEditorErrors();
+      resetTest();
+
+      els.versionStatus.textContent = "Loading versions...";
+      els.versionsList.innerHTML = "";
+      els.testVersionSelect.innerHTML = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/prompts?category=${encodeURIComponent(state.selectedCategory)}`);
+        if (!res.ok) throw new Error("Failed to load prompts");
+        const data = await res.json();
+
+        state.versions = data.versions || [];
+        state.activeVersion = data.activeVersion || null;
+
+        // Default editing version: active or latest
+        const editing = state.versions.find(v => v.version === state.activeVersion) ||
+                        state.versions[0] ||
+                        null;
+
+        if (editing) {
+          state.editingVersion = editing.version;
+          state.subcategories = editing.subcategories || [];
+          state.systemPrompt = editing.system_prompt || "";
+          state.userPromptTemplate = editing.user_prompt_template || "";
+        } else {
+          state.editingVersion = null;
+          state.subcategories = [];
+          state.systemPrompt = "";
+          state.userPromptTemplate = "";
+        }
+
+        renderVersions();
+        renderEditor();
+        renderPreview();
+        renderTestVersionSelect();
+
+        els.versionStatus.textContent = state.activeVersion
+          ? `Active version: ${state.activeVersion}`
+          : "No active version";
+      } catch (err) {
+        console.error(err);
+        els.versionStatus.textContent = "Error loading versions.";
+      }
+    }
+
+    function renderVersions() {
+      els.versionsList.innerHTML = "";
+
+      if (!state.versions.length) {
+        els.versionsList.textContent = "No versions yet.";
+        return;
+      }
+
+      state.versions
+        .slice()
+        .sort((a, b) => b.version - a.version)
+        .forEach(v => {
+          const row = document.createElement("div");
+          row.className = "version-row";
+
+          const left = document.createElement("div");
+          left.textContent = `Version ${v.version}`;
+          if (v.version === state.activeVersion) {
+            const badge = document.createElement("span");
+            badge.className = "badge active";
+            badge.textContent = "Active";
+            left.appendChild(badge);
+          }
+
+          const right = document.createElement("div");
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "small secondary";
+          editBtn.textContent = "Edit";
+          editBtn.onclick = () => loadVersionIntoEditor(v);
+          right.appendChild(editBtn);
+
+          const testBtn = document.createElement("button");
+          testBtn.className = "small secondary";
+          testBtn.textContent = "Test";
+          testBtn.onclick = () => {
+            els.testVersionSelect.value = String(v.version);
+            scrollToTestPanel();
+          };
+          right.appendChild(testBtn);
+
+          if (v.version !== state.activeVersion) {
+            const activateBtn = document.createElement("button");
+            activateBtn.className = "small";
+            activateBtn.textContent = "Activate";
+            activateBtn.onclick = () => activateVersion(v.version);
+            right.appendChild(activateBtn);
+          } else {
+            const rollbackBtn = document.createElement("button");
+            rollbackBtn.className = "small secondary";
+            rollbackBtn.textContent = "Rollback";
+            rollbackBtn.onclick = () => rollbackCategory();
+            right.appendChild(rollbackBtn);
+          }
+
+          row.appendChild(left);
+          row.appendChild(right);
+          els.versionsList.appendChild(row);
+        });
+    }
+
+    function loadVersionIntoEditor(v) {
+      state.editingVersion = v.version;
+      state.subcategories = v.subcategories || [];
+      state.systemPrompt = v.system_prompt || "";
+      state.userPromptTemplate = v.user_prompt_template || "";
+      renderEditor();
+      renderPreview();
+    }
+
+    function renderEditor() {
+      // Subcategories
+      els.subcategoriesContainer.innerHTML = "";
+      state.subcategories.forEach((sub, idx) => {
+        const pill = document.createElement("span");
+        pill.className = "subcat-pill";
+        pill.textContent = sub;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "×";
+        removeBtn.onclick = () => {
+          state.subcategories.splice(idx, 1);
+          renderEditor();
+          renderPreview();
+        };
+
+        pill.appendChild(removeBtn);
+        els.subcategoriesContainer.appendChild(pill);
+      });
+
+      els.systemPromptInput.value = state.systemPrompt;
+      els.userPromptTemplateInput.value = state.userPromptTemplate;
+    }
+
+    function renderPreview() {
+      els.previewSystem.textContent = state.systemPrompt || "(empty system prompt)";
+
+      const framesJson = JSON.stringify(state.previewFrames, null, 2);
+      const user = (state.userPromptTemplate || "")
+        .replace("{{frames}}", framesJson);
+
+      els.previewUser.textContent = user || "(empty user prompt template)";
+    }
+
+    function addSubcategory() {
+      const val = els.newSubcategoryInput.value.trim();
+      if (!val) return;
+      if (!state.subcategories.includes(val)) {
+        state.subcategories.push(val);
+        renderEditor();
+        renderPreview();
+      }
+      els.newSubcategoryInput.value = "";
+    }
+
+    function validateEditor() {
+      const errors = [];
+      if (!state.subcategories.length) {
+        errors.push("At least one subcategory is required.");
+      }
+      if (!state.systemPrompt.trim()) {
+        errors.push("System prompt is required.");
+      }
+      if (!state.userPromptTemplate.trim()) {
+        errors.push("User prompt template is required.");
+      }
+      if (!state.userPromptTemplate.includes("{{frames}}")) {
+        errors.push('User prompt template must include "{{frames}}".');
+      }
+      return errors;
+    }
+
+    function resetEditorErrors() {
+      els.editorErrors.textContent = "";
+    }
+
+    async function saveNewVersion() {
+      resetEditorErrors();
+      const errors = validateEditor();
+      if (errors.length) {
+        els.editorErrors.textContent = errors.join(" ");
+        return;
+      }
+
+      els.saveVersionBtn.disabled = true;
+      els.saveVersionBtn.textContent = "Saving...";
+
+      try {
+        const res = await fetch(`${API_BASE}/prompts/create-version`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            category: state.selectedCategory,
+            subcategories: state.subcategories,
+            systemPrompt: state.systemPrompt,
+            userPromptTemplate: state.userPromptTemplate,
+            updatedBy: "coach" // replace with real user id/name
+          })
+        });
+        if (!res.ok) throw new Error("Failed to create version");
+        const data = await res.json();
+        const newVersion = data.version;
+
+        const res2 = await fetch(`${API_BASE}/prompts/activate-version`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            category: state.selectedCategory,
+            version: newVersion
+          })
+        });
+        if (!res2.ok) throw new Error("Failed to activate version");
+
+        await loadCategoryPrompts();
+      } catch (err) {
+        console.error(err);
+        els.editorErrors.textContent = err.message || "Failed to save version.";
+      } finally {
+        els.saveVersionBtn.disabled = false;
+        els.saveVersionBtn.textContent = "Save as New Version & Activate";
+      }
+    }
+
+    async function activateVersion(version) {
+      try {
+        const res = await fetch(`${API_BASE}/prompts/activate-version`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            category: state.selectedCategory,
+            version
+          })
+        });
+        if (!res.ok) throw new Error("Failed to activate version");
+        await loadCategoryPrompts();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to activate version.");
+      }
+    }
+
+    async function rollbackCategory() {
+      if (!confirm("Rollback to previous version?")) return;
+      try {
+        const res = await fetch(`${API_BASE}/prompts/rollback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: state.selectedCategory })
+        });
+        if (!res.ok) throw new Error("Failed to rollback");
+        await loadCategoryPrompts();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to rollback.");
+      }
+    }
+
+    function renderTestVersionSelect() {
+      els.testVersionSelect.innerHTML = "";
+      if (!state.versions.length) {
+        els.testVersionSelect.innerHTML = `<option value="">No versions</option>`;
+        return;
+      }
+      state.versions
+        .slice()
+        .sort((a, b) => b.version - a.version)
+        .forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = String(v.version);
+          opt.textContent = `Version ${v.version}${v.version === state.activeVersion ? " (active)" : ""}`;
+          els.testVersionSelect.appendChild(opt);
+        });
+      if (state.activeVersion) {
+        els.testVersionSelect.value = String(state.activeVersion);
+      }
+    }
+
+    function resetTest() {
+      els.testErrors.textContent = "";
+      els.testStatus.textContent = "";
+      els.testResult.textContent = "";
+      els.testUrlInput.value = "";
+    }
+
+    function scrollToTestPanel() {
+      els.testUrlInput.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function runTestEvaluation() {
+      els.testErrors.textContent = "";
+      els.testStatus.textContent = "";
+      els.testResult.textContent = "";
+
+      const url = els.testUrlInput.value.trim();
+      const versionStr = els.testVersionSelect.value;
+      if (!url) {
+        els.testErrors.textContent = "Test clip URL is required.";
+        return;
+      }
+      if (!versionStr) {
+        els.testErrors.textContent = "Select a version to test.";
+        return;
+      }
+
+      els.runTestBtn.disabled = true;
+      els.runTestBtn.textContent = "Running...";
+
+      try {
+        const res = await fetch(`${API_BASE}/test-evaluate-prompt`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            category: state.selectedCategory,
+            version: Number(versionStr),
+            testUrl: url,
+            eventIndex: 0,
+            userTier: "coach"
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Test evaluation failed");
+        }
+
+        els.testStatus.textContent = `Provider: ${data.provider} | Version: ${data.version} | Valid: ${data.validation?.isValid ? "Yes" : "No"}`;
+
+        const pretty = JSON.stringify(
+          {
+            result: data.result,
+            validation: data.validation
+          },
+          null,
+          2
+        );
+        els.testResult.textContent = pretty;
+      } catch (err) {
+        console.error(err);
+        els.testErrors.textContent = err.message || "Test evaluation failed.";
+      } finally {
+        els.runTestBtn.disabled = false;
+        els.runTestBtn.textContent = "Run Test Evaluation";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</div>
+
+</body>
+</html>

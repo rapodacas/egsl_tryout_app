@@ -1,8 +1,7 @@
-// backend/api/prompts/create-version.js
-const { withCors } = require("../_cors");
-import { createPromptVersion } from "../../lib/prompts/versioning.js";
+// backend/handlers/prompts-create-version.js
+const { createPromptVersion } = require("../lib/prompts/versioning");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -33,4 +32,4 @@ module.exports = withCors(async (req, res) => {
     console.error("create-version error:", err);
     return res.status(500).json({ error: err.message });
   }
-});
+};

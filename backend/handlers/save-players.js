@@ -1,8 +1,7 @@
-// backend/api/save-players.js
+// backend/handlers/save-players.js
 const { supabase } = require("../lib/supabase");
-const { withCors } = require("./_cors");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -17,7 +16,6 @@ module.exports = withCors(async (req, res) => {
     return res.status(400).json({ error: "players must be a non-empty array" });
   }
 
-  // Normalize rows for Supabase upsert
   const rows = players.map(p => ({
     id: p.id,
     team_id: teamId,
@@ -25,14 +23,12 @@ module.exports = withCors(async (req, res) => {
     updated_at: new Date().toISOString()
   }));
 
-  const { error } = await supabase
-    .from("players")
-    .upsert(rows);
+  const { error } = await supabase.from("players").upsert(rows);
 
   if (error) {
     console.error("save-players error:", error);
     return res.status(500).json({ error: "Failed to save players" });
   }
 
-  return res.status(200).json({ success: true });
-});
+  return res.status(200).json({ ok: true, count: players.length });
+};

@@ -1,9 +1,9 @@
 // backend/lib/evaluation.js
-import { extractFramesFromUrl } from "./ffmpeg.js";
-import { chooseModelForEvent, callModel } from "./providers/index.js";
-import { loadPrompt } from "./prompts/runtime.js";
+const { extractFramesFromUrl } = require("./ffmpeg.js");
+const { chooseModelForEvent, callModel } = require("./providers/index.js");
+const { loadPrompt } = require("./prompts/runtime.js");
 
-export async function evaluateSingleEvent(evt, category, playerId, sessionId, userTier) {
+async function evaluateSingleEvent(evt, category, playerId, sessionId, userTier) {
   if (!evt || !evt.url || typeof evt.eventIndex !== "number") {
     return {
       playerId,
@@ -45,3 +45,5 @@ export async function evaluateSingleEvent(evt, category, playerId, sessionId, us
     };
   }
 }
+
+module.exports = { evaluateSingleEvent };

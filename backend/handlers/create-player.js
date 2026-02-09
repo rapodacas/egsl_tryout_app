@@ -1,8 +1,7 @@
-// backend/api/create-player.js
+// backend/handlers/create-player.js
 const { supabase } = require("../lib/supabase");
-const { withCors } = require("./_cors");
 
-module.exports = withCors(async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
@@ -31,5 +30,5 @@ module.exports = withCors(async function handler(req, res) {
     return res.status(500).json({ error: "Failed to create player" });
   }
 
-  return res.status(200).json({ success: true });
-});
+  return res.status(201).json({ ok: true, player });
+};

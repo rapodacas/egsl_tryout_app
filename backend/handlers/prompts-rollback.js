@@ -1,8 +1,7 @@
-// backend/api/prompts/rollback.js
-const { withCors } = require("../_cors");
-import { rollbackPrompt } from "../../lib/prompts/versioning.js";
+// backend/handlers/prompts-rollback.js
+const { rollbackPrompt } = require("../lib/prompts/versioning");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -20,4 +19,4 @@ module.exports = withCors(async (req, res) => {
     console.error("rollback error:", err);
     return res.status(500).json({ error: err.message });
   }
-});
+};

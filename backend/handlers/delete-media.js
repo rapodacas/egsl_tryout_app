@@ -1,8 +1,7 @@
-// backend/api/delete-media.js
+// backend/handlers/delete-media.js
 const { supabase } = require("../lib/supabase");
-const { withCors } = require("./_cors");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { paths } = req.body;
@@ -15,4 +14,4 @@ module.exports = withCors(async (req, res) => {
   }
 
   return res.status(200).json({ success: true });
-});
+};

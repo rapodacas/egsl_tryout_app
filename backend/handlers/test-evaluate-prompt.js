@@ -1,19 +1,18 @@
-// backend/api/test-evaluate-prompt.js
-const { withCors } = require("./_cors");
-import { supabase } from "../supabaseClient.js";
-import { callModel } from "../lib/providers/index.js";
-import { extractFramesFromUrl } from "../lib/ffmpeg.js";
+// backend/handlers/test-evaluate-prompt.js
+const { supabase } = require("../lib/supabase");
+const { callModel } = require("../lib/providers/index");
+const { extractFramesFromUrl } = require("../lib/ffmpeg");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const {
     category,
-    version,          // optional: if omitted, use active
-    testUrl,          // media URL
-    eventIndex = 0,   // for consistency
+    version,
+    testUrl,
+    eventIndex = 0,
     userTier = "free"
   } = req.body || {};
 
@@ -22,7 +21,6 @@ module.exports = withCors(async (req, res) => {
   }
 
   try {
-    // 1. Load prompt row (specific version or active)
     let query = supabase
       .from("prompts")
       .select("*")
@@ -39,27 +37,22 @@ module.exports = withCors(async (req, res) => {
       return res.status(404).json({ error: "Prompt version not found" });
     }
 
-    // 2. Extract frames
     const frames = await extractFramesFromUrl(testUrl, 6);
 
-    // 3. Build prompts
     const systemPrompt = row.system_prompt;
     const userPrompt = row.user_prompt_template.replace(
       "{{frames}}",
       JSON.stringify(frames)
     );
 
-    // 4. Choose provider (reuse your routing if you want)
-    const provider = "groq"; // or chooseModelForEvent({ url: testUrl }, userTier)
+    const provider = "groq";
 
-    // 5. Call model
     const response = await callModel(provider, {
       frames,
       systemPrompt,
       userPrompt
     });
 
-    // 6. Basic validation: ensure all subcategories exist
     const missingSubcategories = [];
     for (const sub of row.subcategories || []) {
       if (response[sub] == null) missingSubcategories.push(sub);
@@ -81,4 +74,4 @@ module.exports = withCors(async (req, res) => {
     console.error("test-evaluate-prompt error", err);
     return res.status(500).json({ error: err.message || "Test evaluation failed" });
   }
-});
+};

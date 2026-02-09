@@ -1,5 +1,5 @@
 // backend/lib/prompts/runtime.js
-import { supabase } from "../supabase.js";
+const { supabase } = require("../supabase.js");
 
 const promptCache = new Map(); // key: category, value: { subcategories, systemPrompt, userPromptTemplate, version }
 
@@ -7,7 +7,7 @@ const promptCache = new Map(); // key: category, value: { subcategories, systemP
  * Load the active prompt for a category.
  * Uses in-memory cache for speed, but always source of truth is Supabase.
  */
-export async function loadPrompt(category) {
+async function loadPrompt(category) {
   if (!category) {
     throw new Error("Category is required to load prompt");
   }
@@ -47,14 +47,14 @@ export async function loadPrompt(category) {
 /**
  * Clear cache for a specific category (e.g., after updating prompts).
  */
-export function invalidatePromptCache(category) {
+function invalidatePromptCache(category) {
   if (category) promptCache.delete(category);
 }
 
 /**
  * Clear all prompt cache (e.g., on deploy or admin action).
  */
-export function clearPromptCache() {
+function clearPromptCache() {
   promptCache.clear();
 }
 
@@ -90,3 +90,5 @@ function validatePromptRow(row, category) {
     );
   }
 }
+
+module.exports = { loadPrompt, invalidatePromptCache, clearPromptCache };

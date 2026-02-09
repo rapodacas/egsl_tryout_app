@@ -1,8 +1,7 @@
-// backend/api/prompts.js
-const { withCors } = require("./_cors");
-import { supabase } from "../supabaseClient.js";
+// backend/handlers/prompts.js
+const { supabase } = require("../lib/supabase");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   const category = req.query.category;
 
   if (!category) {
@@ -28,4 +27,4 @@ module.exports = withCors(async (req, res) => {
     console.error("GET /api/prompts error:", err);
     return res.status(500).json({ error: "Failed to load prompts" });
   }
-});
+};

@@ -1,8 +1,8 @@
-// backend/api/evaluate-media.js
-const { withCors } = require("./_cors");
-import { evaluateSingleEvent } from "../lib/evaluation.js";
+// backend/handlers/evaluate-media.js
+const { supabase } = require("../lib/supabase");
+const { evaluateSingleEvent } = require("../lib/evaluation");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -21,14 +21,7 @@ module.exports = withCors(async (req, res) => {
   let successCount = 0;
 
   for (const evt of events) {
-    const result = await evaluateSingleEvent(
-      evt,
-      category,
-      playerId,
-      sessionId,
-      userTier
-    );
-
+    const result = await evaluateSingleEvent(evt, category, playerId, sessionId, userTier);
     evaluations.push(result);
     if (result.success) successCount++;
   }
@@ -49,4 +42,4 @@ module.exports = withCors(async (req, res) => {
     successCount,
     failureCount
   });
-});
+};

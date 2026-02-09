@@ -1,9 +1,9 @@
 // backend/lib/providers/openai.js
-import OpenAI from "openai";
+const OpenAI = require("openai");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function callOpenAIModel({ frames, systemPrompt, userPrompt }) {
+async function callOpenAIModel({ frames, systemPrompt, userPrompt }) {
   const response = await openai.chat.completions.create({
     model: "o3-mini",
     messages: [
@@ -16,3 +16,5 @@ export async function callOpenAIModel({ frames, systemPrompt, userPrompt }) {
 
   return JSON.parse(response.choices[0].message.content);
 }
+
+module.exports = { callOpenAIModel };

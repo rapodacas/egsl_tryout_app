@@ -537,45 +537,41 @@
     cursor: pointer;
   }
 
-  #geminiResultBox {
-    background: #f3f3f3;
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 12px;
-    font-size: 14px;
-  }
-
-  .gemini-batch-btn {
-    background: #5c6bc0;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: none;
-    margin-left: 8px;
-    font-size: 14px;
-  }
-
-  .attachment-thumb {
-    position: relative;
-  }
-
-  .gemini-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
+  /* Base badge */
+  .eval-session-badge {
+    display: inline-block;
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: #4caf50; /* green */
-    border: 2px solid white;
+    margin-left: 6px;
   }
 
-  .gemini-badge.pending {
-    background: #ccc;
+  /* No evaluations yet */
+  .eval-none {
+    background-color: #9ca3af; /* neutral gray */
   }
 
-  .gemini-badge.error {
-    background: #e53935;
+  /* Some evaluated OR partial failures */
+  .eval-some {
+    background-color: #fbbf24; /* amber/yellow */
+  }
+
+  /* All evaluated successfully */
+  .eval-all {
+    background-color: #10b981; /* green */
+  }
+
+  .eval-session-badge:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    background: #111;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    transform: translateY(-22px);
+    pointer-events: none;
   }
 
   .upload-overlay {
@@ -591,7 +587,45 @@
     z-index: 9999;
   }
 
-  .hidden { display: none !important; }
+  .hidden {
+    display: none !important;
+  }
+
+  .upload-overlay-content {
+    text-align: center;
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    margin: 0 auto 12px auto;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Progress bar (you already have this) */
+  .upload-bar {
+    width: 200px;
+    height: 6px;
+    background: rgba(255,255,255,0.3);
+    margin-top: 12px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  #uploadBarFill {
+    width: 0%;
+    height: 100%;
+    background: white;
+    transition: width 0.1s linear;
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -780,10 +814,12 @@
   Migrate Old Teams
 </button>
 
-<div id="uploadOverlay" class="hidden upload-overlay">
-  <div>
-    <div id="uploadText">Uploading…</div>
-    <div id="uploadBar">
+<div id="uploadOverlay" class="upload-overlay hidden">
+  <div class="upload-overlay-content">
+    <div id="uploadOverlaySpinner" class="spinner hidden"></div>
+    <div id="uploadOverlayMessage">Uploading…</div>
+
+    <div id="uploadBar" class="upload-bar">
       <div id="uploadBarFill"></div>
     </div>
   </div>
@@ -1872,7 +1908,7 @@
       }
 
       // Show overlay
-      overlay.classList.remove("hidden");
+      showUploadOverlay()
 
       if (!progressState[category]) {
         console.warn("progressState missing for category, initializing default");
@@ -1949,7 +1985,7 @@
         sessionId: record.sessionId,
         timestamp,
         clipNumber,
-        gemini: {
+        evaluation: {
           evaluated: false,
           summary: null,
           keyPoints: [],
@@ -1960,6 +1996,62 @@
       };
 
       record.media.attachments.push(attachment);
+      save();
+
+      renderProgressPanel(category);
+      hideOverlay();
+
+      showProcessingOverlay("Detecting skill events…");
+    
+      // 4) Call trim-video to convert raw video → event clips
+      const trimRes = await fetch(`${API_BASE}/trim-video`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          supabasePath: path,
+          playerId: player.id,
+          sessionId: record.sessionId,
+          category,
+          filename
+        })
+      });
+      hideOverlay();
+
+      if (!trimRes.ok) {
+        console.error("Trim failed", await trimRes.text());
+        alert("Video uploaded, but trimming failed.");
+        return;
+      }
+
+      const { events } = await trimRes.json();
+
+      // 5) Remove the original raw attachment
+      record.media.attachments = record.media.attachments.filter(a => a.id !== attachment.id);
+
+      // 6) Insert event attachments
+      events.forEach(evt => {
+        record.media.attachments.push({
+          id: crypto.randomUUID(),
+          type: "video",
+          supabasePath: evt.path,
+          url: evt.url,
+          playerId: player.id,
+          category,
+          sessionId: record.sessionId,
+          timestamp,
+          clipNumber: evt.index,
+          eventIndex: evt.index,
+          evaluation: {
+            evaluated: false,
+            summary: null,
+            keyPoints: [],
+            score: null,
+            rawResponse: null
+          },
+          purged: false
+        });
+      });
+
       save();
 
       renderProgressPanel(category);
@@ -1979,6 +2071,37 @@
   function handleDirectFileUpload(file, category) {
     const fakeEvent = { target: { files: [file], dataset: { category } } };
     handleFileSelected(fakeEvent);
+  }
+
+  function hideOverlay() {
+    const overlay = document.getElementById("uploadOverlay");
+    overlay.classList.add("hidden");
+  }
+
+  function showUploadOverlay() {
+    const overlay = document.getElementById("uploadOverlay");
+    const msg = document.getElementById("uploadOverlayMessage");
+    const spinner = document.getElementById("uploadOverlaySpinner");
+    const bar = document.getElementById("uploadBar");
+
+    msg.textContent = "Uploading…";
+    spinner.classList.add("hidden");
+    bar.classList.remove("hidden");
+
+    overlay.classList.remove("hidden");
+  }
+
+  function showProcessingOverlay(message = "Processing…") {
+    const overlay = document.getElementById("uploadOverlay");
+    const msg = document.getElementById("uploadOverlayMessage");
+    const spinner = document.getElementById("uploadOverlaySpinner");
+    const bar = document.getElementById("uploadBar");
+
+    msg.textContent = message;
+    spinner.classList.remove("hidden");
+    bar.classList.add("hidden"); // hide progress bar during trimming
+
+    overlay.classList.remove("hidden");
   }
 
   async function record720pVideo() {
@@ -2066,6 +2189,75 @@
     const clips = record.media.attachments;
     return clips.length + 1;
   }
+
+  async function evaluateCategory(category) {
+    const record = players[current].progress[category][progressState[category].index];
+    const userTier = record.userTier || "free";
+
+    showProcessingOverlay("Evaluating skill events…");
+
+    try {
+      const data = await evaluateCategoryBatch(record, category, userTier);
+      applyEvaluationsToAttachments(record, category, data.evaluations);
+      savePlayer(players[current]);
+      renderProgressPanel(category);
+
+      if (data.partialFailure) {
+        alert(`Some events could not be evaluated (${data.failureCount} failed).`);
+      }
+    } catch (err) {
+      alert("Evaluation failed: " + err.message);
+    } finally {
+      hideOverlay();
+    }
+  }
+
+  function applyEvaluationsToAttachments(category, data) {
+    const { evaluations } = data;
+
+    evaluations.forEach(ev => {
+      const att = record.media.attachments.find(
+        a => a.category === category && a.eventIndex === ev.eventIndex
+      );
+
+      if (!att) return;
+
+      if (ev.success) {
+        att.evaluation = {
+          evaluated: true,
+          provider: ev.provider,
+          summary: ev.summary,
+          keyPoints: ev.keyPoints,
+          score: ev.score,
+          rawResponse: ev.rawResponse
+        };
+      } else {
+        att.evaluation = {
+          evaluated: false,
+          provider: null,
+          summary: null,
+          keyPoints: [],
+          score: null,
+          rawResponse: null,
+          error: ev.error
+        };
+      }
+    });
+  }
+
+  function retryFailed(category) {
+    const failedEvents = record.media.attachments
+      .filter(a => a.category === category && a.evaluation.error)
+      .map(a => ({
+        eventIndex: a.eventIndex,
+        url: a.url
+      }));
+
+    if (failedEvents.length === 0) return;
+
+    evaluateCategory(category, failedEvents);
+  }
+
 </script>
 
 <!-- 7. PROGRESS UI, SWIPE, ATTACHMENTS, EVALUATION -->
@@ -2273,13 +2465,17 @@
     container.innerHTML = "";
 
     const isEditable = progressState[category].index === 0;
-    const attachments = record.media.attachments;
+
+    // Only attachments for this category
+    const attachments = record.media.attachments.filter(a => a.category === category);
     const count = attachments.length;
 
+    // Paperclip icon
     const icon = document.createElement("img");
     icon.src = "icons/paperclip.svg";
     icon.className = "attachments-icon";
 
+    // Count or "+"
     const countEl = document.createElement("span");
     countEl.className = "attachments-count";
 
@@ -2291,18 +2487,27 @@
       container.classList.add("disabled");
     }
 
-    let badgeClass = "gemini-none";
+    // Evaluation badge logic
+    let badgeClass = "eval-none";
 
     if (count > 0) {
-      const evaluated = attachments.filter(a => a.gemini).length;
+      const evaluated = attachments.filter(a => a.evaluation?.evaluated).length;
+      const failed = attachments.filter(a => a.evaluation?.error).length;
 
-      if (evaluated === 0) badgeClass = "gemini-none";
-      else if (evaluated === count) badgeClass = "gemini-all";
-      else badgeClass = "gemini-some";
+      if (evaluated === 0 && failed === 0) badgeClass = "eval-none";
+      else if (evaluated === count) badgeClass = "eval-all";
+      else if (failed > 0) badgeClass = "eval-some"; // partial failures
+      else badgeClass = "eval-some";
     }
 
     const badge = document.createElement("div");
-    badge.className = `gemini-session-badge ${badgeClass}`;
+    badge.className = `eval-session-badge ${badgeClass}`;
+
+    badge.setAttribute("data-tooltip", {
+      "eval-none": "No evaluations yet",
+      "eval-some": "Some evaluated / some failed",
+      "eval-all": "All evaluated"
+    }[badgeClass]);
 
     container.appendChild(icon);
     container.appendChild(countEl);
@@ -2313,6 +2518,54 @@
       else openAttachmentViewer(category, progressState[category].index, attachments);
     };
   }
+  // function renderAttachments(category, record) {
+  //   if (!record.media) record.media = { attachments: [] };
+  //   if (!record.media.attachments) record.media.attachments = [];
+
+  //   const container = document.getElementById(`${category}Attachments`);
+  //   container.innerHTML = "";
+
+  //   const isEditable = progressState[category].index === 0;
+  //   const attachments = record.media.attachments;
+  //   const count = attachments.length;
+
+  //   const icon = document.createElement("img");
+  //   icon.src = "icons/paperclip.svg";
+  //   icon.className = "attachments-icon";
+
+  //   const countEl = document.createElement("span");
+  //   countEl.className = "attachments-count";
+
+  //   if (count > 0) {
+  //     countEl.textContent = count;
+  //   } else if (isEditable) {
+  //     countEl.textContent = "+";
+  //   } else {
+  //     container.classList.add("disabled");
+  //   }
+
+  //   let badgeClass = "gemini-none";
+
+  //   if (count > 0) {
+  //     const evaluated = attachments.filter(a => a.gemini).length;
+
+  //     if (evaluated === 0) badgeClass = "gemini-none";
+  //     else if (evaluated === count) badgeClass = "gemini-all";
+  //     else badgeClass = "gemini-some";
+  //   }
+
+  //   const badge = document.createElement("div");
+  //   badge.className = `gemini-session-badge ${badgeClass}`;
+
+  //   container.appendChild(icon);
+  //   container.appendChild(countEl);
+  //   container.appendChild(badge);
+
+  //   container.onclick = () => {
+  //     if (isEditable) openAttachmentPicker(category);
+  //     else openAttachmentViewer(category, progressState[category].index, attachments);
+  //   };
+  // }
 
   function openAttachmentPicker(category) {
     if (!progressState[category]) {
@@ -2357,55 +2610,29 @@
       openNoteCreator(category);
     };
 
-    document.getElementById("batchGeminiBtn").onclick = async () => {
-      const sessionIndex = progressState[category].index;
-
-      const record = players[current].progress[category][sessionIndex];
-      const attachments = record.media?.attachments?.filter(a =>
-        a.type === "image" || a.type === "video"
-      ) || [];
-
-      if (attachments.length === 0) {
-        alert("No photo/video attachments to evaluate.");
-        return;
-      }
-
-      const btn = document.getElementById("batchGeminiBtn");
-      btn.textContent = "Evaluating...";
-      btn.disabled = true;
+    document.getElementById("evaluateBtn").onclick = async () => {
+      const btn = document.getElementById("evaluateBtn");
+      btn.textContent = "Evaluating…";
 
       try {
-        const payload = {
+        const result = await evaluateSingleAttachment(attachment, {
           playerId: players[current].id,
-          teamId: currentTeamName,
+          sessionId: record.sessionId,
           category,
-          sessionIndex,
-          attachments: attachments.map(a => ({
-            id: a.id,
-            url: a.url,
-            type: a.type
-          }))
-        };
-
-        const result = await geminiEvaluateBatch(payload);
-
-        // Merge results back into attachments
-        result.results.forEach(r => {
-          const att = attachments.find(a => a.id === r.attachmentId);
-          if (att) att.gemini = r;
+          userTier: record.userTier
         });
 
+        attachment.evaluation = normalizeEvaluation(result);
         savePlayer(players[current]);
-        alert("Gemini evaluation complete!");
+        renderEvaluationPanel(attachment);
+
+        btn.textContent = "Evaluate Again";
       } catch (err) {
-        alert(err.message);
+        alert("Evaluation failed.");
+        btn.textContent = "Evaluate";
       }
-
-      btn.textContent = "Evaluate All";
-      btn.disabled = false;
-
-      renderAttachments(category, record);
     };
+
   }
 
   function openNoteCreator(category) {
@@ -2464,14 +2691,19 @@
     let html = `<h3>Attachments</h3><div class="attachment-grid">`;
 
     attachments.forEach(att => {
-      const badgeClass = att.gemini ? "gemini-badge" : "gemini-badge pending";
+      const evaluated = att.evaluation?.evaluated;
+      const failed = att.evaluation?.error;
+
+      let badgeClass = "eval-none";
+      if (evaluated) badgeClass = "eval-all";
+      else if (failed) badgeClass = "eval-some";
 
       html += `
         <div class="attachment-thumb" data-id="${att.id}">
           ${att.type === "image" ? `<img src="${att.url}" class="thumb-img">` : ""}
           ${att.type === "video" ? `<video src="${att.url}" class="thumb-video"></video>` : ""}
           ${att.type === "note" ? `<div class="note-thumb">${att.text.slice(0,40)}...</div>` : ""}
-          <div class="${badgeClass}"></div>
+          <div class="eval-session-badge ${badgeClass}"></div>
         </div>
       `;
     });
@@ -2491,7 +2723,6 @@
         const att = attachments.find(a => a.id === id);
 
         modal.classList.add("hidden");
-
         openAttachmentViewerSingle(category, sessionIndex, att);
       };
     });
@@ -2511,12 +2742,20 @@
       previewHTML = `<div class="note-viewer">${attachment.text}</div>`;
     }
 
-    const geminiHTML = attachment.gemini
-      ? `<div id="geminiResultBox">
-           <strong>Gemini Evaluation:</strong><br>
-           ${attachment.gemini.summary || "No summary"}
-         </div>`
-      : `<div id="geminiResultBox" style="display:none;"></div>`;
+    // Evaluation panel (hidden until populated)
+    const evaluationPanel = `
+      <div id="evaluationPanel" class="evaluation-panel hidden">
+        <div class="evaluation-header">
+          <span class="evaluation-title">Evaluation</span>
+          <span id="evaluationProvider" class="evaluation-provider"></span>
+        </div>
+
+        <div id="evaluationScore" class="evaluation-score"></div>
+        <div id="evaluationSummary" class="evaluation-summary"></div>
+        <ul id="evaluationKeyPoints" class="evaluation-keypoints"></ul>
+        <div id="evaluationError" class="evaluation-error hidden"></div>
+      </div>
+    `;
 
     content.innerHTML = `
       <h3>Attachment</h3>
@@ -2524,11 +2763,11 @@
 
       <div class="attachment-viewer-buttons">
         <button id="deleteAttachmentBtn" style="background:#d9534f;color:white;">Delete</button>
-        <button id="geminiBtn" style="background:#0275d8;color:white;">Evaluate</button>
+        <button id="evaluateBtn" style="background:#0275d8;color:white;">Evaluate</button>
         <button id="closeAttachmentViewerBtn">Close</button>
       </div>
 
-      ${geminiHTML}
+      ${evaluationPanel}
     `;
 
     modal.classList.remove("hidden");
@@ -2546,41 +2785,200 @@
       renderAttachments(category, record);
     };
 
-    document.getElementById("geminiBtn").onclick = async () => {
-      const btn = document.getElementById("geminiBtn");
-      btn.textContent = "Evaluating...";
+    // Render existing evaluation if present
+    renderEvaluationPanel(attachment);
 
-      const payload = {
-        playerId: players[current].id,
-        teamId: currentTeamName,
-        category,
-        sessionIndex,
-        attachmentId: attachment.id,
-        url: attachment.url
-      };
+    // Evaluate button
+    document.getElementById("evaluateBtn").onclick = async () => {
+      const btn = document.getElementById("evaluateBtn");
+      btn.textContent = "Evaluating…";
 
       try {
-        const result = await geminiEvaluateSingle(payload);
+        const result = await evaluateSingleAttachment(attachment); // you'll implement this
 
-        // Save into attachment metadata
-        attachment.gemini = result;
+        attachment.evaluation = {
+          evaluated: true,
+          provider: result.provider,
+          summary: result.summary,
+          keyPoints: result.keyPoints,
+          score: result.score,
+          rawResponse: result.rawResponse
+        };
+
         savePlayer(players[current]);
-
-        const box = document.getElementById("geminiResultBox");
-        box.style.display = "block";
-        box.innerHTML = `
-          <strong>Gemini Evaluation:</strong><br>
-          ${result.summary || "No summary"}
-        `;
+        renderEvaluationPanel(attachment);
 
         btn.textContent = "Evaluate Again";
       } catch (err) {
-        alert("Gemini evaluation failed.");
+        alert("Evaluation failed.");
         btn.textContent = "Evaluate";
       }
     };
-
   }
+
+  function renderEvaluationPanel(att) {
+    const panel = document.getElementById("evaluationPanel");
+    const providerEl = document.getElementById("evaluationProvider");
+    const scoreEl = document.getElementById("evaluationScore");
+    const summaryEl = document.getElementById("evaluationSummary");
+    const keyPointsEl = document.getElementById("evaluationKeyPoints");
+    const errorEl = document.getElementById("evaluationError");
+
+    // Reset
+    panel.classList.add("hidden");
+    errorEl.classList.add("hidden");
+    keyPointsEl.innerHTML = "";
+    scoreEl.textContent = "";
+    summaryEl.textContent = "";
+    providerEl.textContent = "";
+
+    if (!att.evaluation) return;
+
+    panel.classList.remove("hidden");
+
+    if (att.evaluation.error) {
+      errorEl.textContent = `Evaluation failed: ${att.evaluation.error}`;
+      errorEl.classList.remove("hidden");
+      return;
+    }
+
+    providerEl.textContent = att.evaluation.provider || "";
+    scoreEl.textContent = att.evaluation.score != null ? `Score: ${att.evaluation.score}` : "";
+    summaryEl.textContent = att.evaluation.summary || "";
+
+    if (Array.isArray(att.evaluation.keyPoints)) {
+      att.evaluation.keyPoints.forEach(kp => {
+        const li = document.createElement("li");
+        li.textContent = kp;
+        keyPointsEl.appendChild(li);
+      });
+    }
+  }
+
+  // function openAttachmentViewer(category, sessionIndex, attachments) {
+  //   const modal = document.getElementById("attachmentModal");
+  //   const content = document.getElementById("attachmentModalContent");
+
+  //   let html = `<h3>Attachments</h3><div class="attachment-grid">`;
+
+  //   attachments.forEach(att => {
+  //     const badgeClass = att.gemini ? "gemini-badge" : "gemini-badge pending";
+
+  //     html += `
+  //       <div class="attachment-thumb" data-id="${att.id}">
+  //         ${att.type === "image" ? `<img src="${att.url}" class="thumb-img">` : ""}
+  //         ${att.type === "video" ? `<video src="${att.url}" class="thumb-video"></video>` : ""}
+  //         ${att.type === "note" ? `<div class="note-thumb">${att.text.slice(0,40)}...</div>` : ""}
+  //         <div class="${badgeClass}"></div>
+  //       </div>
+  //     `;
+  //   });
+
+  //   html += `</div><button id="closeModalBtn">Close</button>`;
+
+  //   content.innerHTML = html;
+  //   modal.classList.remove("hidden");
+
+  //   document.getElementById("closeModalBtn").onclick = () => {
+  //     modal.classList.add("hidden");
+  //   };
+
+  //   content.querySelectorAll(".attachment-thumb").forEach(div => {
+  //     div.onclick = () => {
+  //       const id = div.dataset.id;
+  //       const att = attachments.find(a => a.id === id);
+
+  //       modal.classList.add("hidden");
+
+  //       openAttachmentViewerSingle(category, sessionIndex, att);
+  //     };
+  //   });
+  // }
+
+  // function openAttachmentViewerSingle(category, sessionIndex, attachment) {
+  //   const modal = document.getElementById("attachmentViewerModal");
+  //   const content = document.getElementById("attachmentViewerContent");
+
+  //   let previewHTML = "";
+
+  //   if (attachment.type === "image") {
+  //     previewHTML = `<img src="${attachment.url}" />`;
+  //   } else if (attachment.type === "video") {
+  //     previewHTML = `<video src="${attachment.url}" controls></video>`;
+  //   } else if (attachment.type === "note") {
+  //     previewHTML = `<div class="note-viewer">${attachment.text}</div>`;
+  //   }
+
+  //   const geminiHTML = attachment.gemini
+  //     ? `<div id="geminiResultBox">
+  //          <strong>Gemini Evaluation:</strong><br>
+  //          ${attachment.gemini.summary || "No summary"}
+  //        </div>`
+  //     : `<div id="geminiResultBox" style="display:none;"></div>`;
+
+  //   content.innerHTML = `
+  //     <h3>Attachment</h3>
+  //     ${previewHTML}
+
+  //     <div class="attachment-viewer-buttons">
+  //       <button id="deleteAttachmentBtn" style="background:#d9534f;color:white;">Delete</button>
+  //       <button id="geminiBtn" style="background:#0275d8;color:white;">Evaluate</button>
+  //       <button id="closeAttachmentViewerBtn">Close</button>
+  //     </div>
+
+  //     ${geminiHTML}
+  //   `;
+
+  //   modal.classList.remove("hidden");
+
+  //   document.getElementById("closeAttachmentViewerBtn").onclick = () => {
+  //     modal.classList.add("hidden");
+  //   };
+
+  //   document.getElementById("deleteAttachmentBtn").onclick = () => {
+  //     const record = players[current].progress[category][sessionIndex];
+  //     record.media.attachments = record.media.attachments.filter(a => a.id !== attachment.id);
+
+  //     savePlayer(players[current]);
+  //     modal.classList.add("hidden");
+  //     renderAttachments(category, record);
+  //   };
+
+  //   document.getElementById("geminiBtn").onclick = async () => {
+  //     const btn = document.getElementById("geminiBtn");
+  //     btn.textContent = "Evaluating...";
+
+  //     const payload = {
+  //       playerId: players[current].id,
+  //       teamId: currentTeamName,
+  //       category,
+  //       sessionIndex,
+  //       attachmentId: attachment.id,
+  //       url: attachment.url
+  //     };
+
+  //     try {
+  //       const result = await geminiEvaluateSingle(payload);
+
+  //       // Save into attachment metadata
+  //       attachment.gemini = result;
+  //       savePlayer(players[current]);
+
+  //       const box = document.getElementById("geminiResultBox");
+  //       box.style.display = "block";
+  //       box.innerHTML = `
+  //         <strong>Gemini Evaluation:</strong><br>
+  //         ${result.summary || "No summary"}
+  //       `;
+
+  //       btn.textContent = "Evaluate Again";
+  //     } catch (err) {
+  //       alert("Gemini evaluation failed.");
+  //       btn.textContent = "Evaluate";
+  //     }
+  //   };
+
+  // }
 
 
   function initCircleListeners() {
@@ -2730,41 +3128,155 @@
   });
 </script>
 
-<!-- 9. GEMINI HELPER -->
-<script data-chunk="gemini-client">
-  async function geminiEvaluateBatch(payload) {
+<!-- 9. AI Evaluation Helper -->
+<script data-chunk="ai-client">
+  //
+  // 1. Utility: get all event attachments for a category
+  //
+  function getEventAttachments(category, record) {
+    return (record.media?.attachments || []).filter(
+      a => a.category === category && a.type === "video"
+    );
+  }
+
+  //
+  // 2. Core API: batch evaluation
+  //
+  async function evaluateBatch(events, { playerId, sessionId, category, userTier = "free" }) {
     const res = await fetch(`${API_BASE}/evaluate-media`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        events,
+        playerId,
+        sessionId,
+        category,
+        userTier
+      })
     });
 
+    const data = await res.json();
+
     if (!res.ok) {
-      throw new Error("Gemini batch evaluation failed");
+      throw new Error(data.error || "Evaluation failed");
     }
 
-    return await res.json();
+    return data; // { evaluations, partialFailure, successCount, failureCount }
   }
 
-  async function geminiEvaluateSingle({ playerId, teamId, category, sessionIndex, attachment }) {
-    const payload = {
-      playerId,
-      teamId,
-      category,
-      sessionIndex,
-      attachments: [
-        {
-          id: attachment.id,
-          url: attachment.url,
-          type: attachment.type
-        }
-      ]
+  //
+  // 3. Core API: single-attachment evaluation
+  //
+  async function evaluateSingleAttachment(attachment, { playerId, sessionId, category, userTier = "free" }) {
+    const events = [
+      {
+        eventIndex: attachment.eventIndex,
+        url: attachment.url
+      }
+    ];
+
+    const result = await evaluateBatch(events, { playerId, sessionId, category, userTier });
+    return result.evaluations[0];
+  }
+
+  //
+  // 4. Normalize evaluation response
+  //
+  function normalizeEvaluation(ev) {
+    if (!ev.success) {
+      return {
+        evaluated: false,
+        provider: null,
+        summary: null,
+        keyPoints: [],
+        score: null,
+        rawResponse: null,
+        error: ev.error
+      };
+    }
+
+    return {
+      evaluated: true,
+      provider: ev.provider,
+      summary: ev.summary,
+      keyPoints: ev.keyPoints,
+      score: ev.score,
+      rawResponse: ev.rawResponse,
+      error: null
     };
+  }
 
-    const result = await geminiEvaluateBatch(payload);
+  //
+  // 5. Apply evaluations to attachments
+  //
+  function applyEvaluationsToAttachments(record, category, evaluations) {
+    evaluations.forEach(ev => {
+      const att = record.media.attachments.find(
+        a => a.category === category && a.eventIndex === ev.eventIndex
+      );
+      if (!att) return;
 
-    // Return the single result directly
-    return result.results[0];
+      att.evaluation = normalizeEvaluation(ev);
+    });
+  }
+
+  //
+  // 6. Evaluate all attachments in a category
+  //
+  async function evaluateCategoryBatch(record, category, userTier = "free") {
+    const events = getEventAttachments(category, record).map(a => ({
+      eventIndex: a.eventIndex,
+      url: a.url
+    }));
+
+    if (events.length === 0) {
+      throw new Error("No event clips to evaluate");
+    }
+
+    return await evaluateBatch(events, {
+      playerId: record.playerId,
+      sessionId: record.sessionId,
+      category,
+      userTier
+    });
+  }
+
+  //
+  // 7. Retry failed evaluations
+  //
+  async function retryFailedEvaluations(record, category, userTier = "free") {
+    const failed = getEventAttachments(category, record).filter(
+      a => a.evaluation?.error
+    );
+
+    const events = failed.map(a => ({
+      eventIndex: a.eventIndex,
+      url: a.url
+    }));
+
+    if (events.length === 0) return null;
+
+    return await evaluateBatch(events, {
+      playerId: record.playerId,
+      sessionId: record.sessionId,
+      category,
+      userTier
+    });
+  }
+
+  //
+  // 8. Status helpers
+  //
+  function isEvaluated(att) {
+    return att.evaluation?.evaluated === true;
+  }
+
+  function isFailed(att) {
+    return !!att.evaluation?.error;
+  }
+
+  function isPending(att) {
+    return !att.evaluation;
   }
 </script>
 

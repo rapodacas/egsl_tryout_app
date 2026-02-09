@@ -1,8 +1,7 @@
-// backend/api/create-team.js
+// backend/handlers/create-teams.js
 const { supabase } = require("../lib/supabase");
-const { withCors } = require("./_cors");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { teamName } = req.body;
@@ -17,4 +16,4 @@ module.exports = withCors(async (req, res) => {
   if (error) return res.status(500).json({ error: "Failed to create team" });
 
   return res.status(200).json({ team: data });
-});
+};

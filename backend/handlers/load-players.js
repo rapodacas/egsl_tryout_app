@@ -1,8 +1,7 @@
-// backend/api/load-players.js
+// backend/handlers/load-players.js
 const { supabase } = require("../lib/supabase");
-const { withCors } = require("./_cors");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -23,12 +22,11 @@ module.exports = withCors(async (req, res) => {
     return res.status(500).json({ error: "Failed to load players" });
   }
 
-  // ⭐ Transform DB rows → frontend player objects
   const players = data.map(row => ({
-    ...row.data,          // spread the actual player fields
-    id: row.id,           // preserve id
-    teamId: row.team_id   // preserve teamId
+    ...row.data,
+    id: row.id,
+    teamId: row.team_id
   }));
 
   return res.status(200).json(players);
-});
+};

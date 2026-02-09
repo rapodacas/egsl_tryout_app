@@ -1,6 +1,6 @@
 // backend/lib/ffmpeg.js
 
-import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+const { createFFmpeg, fetchFile } = require("@ffmpeg/ffmpeg");
 
 const ffmpeg = createFFmpeg({ log: false });
 
@@ -10,7 +10,7 @@ async function ensureFFmpegLoaded() {
   }
 }
 
-export async function extractFramesFromUrl(videoUrl, frameCount = 6) {
+async function extractFramesFromUrl(videoUrl, frameCount = 6) {
   await ensureFFmpegLoaded();
 
   const resp = await fetch(videoUrl);
@@ -47,3 +47,5 @@ export async function extractFramesFromUrl(videoUrl, frameCount = 6) {
   ffmpeg.FS("unlink", "input.mp4");
   return frames;
 }
+
+module.exports = { extractFramesFromUrl };

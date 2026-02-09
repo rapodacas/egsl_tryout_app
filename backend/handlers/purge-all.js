@@ -1,7 +1,7 @@
+// backend/handlers/purge-all.js
 const { createClient } = require("@supabase/supabase-js");
-const { withCors } = require("./_cors");
 
-module.exports = withCors(async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
@@ -11,7 +11,6 @@ module.exports = withCors(async function handler(req, res) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // List all objects in the bucket
   const { data, error } = await supabase.storage
     .from("media")
     .list("", { recursive: true });
@@ -37,4 +36,4 @@ module.exports = withCors(async function handler(req, res) {
   }
 
   return res.status(200).json({ deleted: allPaths });
-});
+};

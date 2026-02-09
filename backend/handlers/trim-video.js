@@ -1,6 +1,7 @@
-const { withCors } = require("./_cors");
+// backend/handlers/trim-video.js
+const { supabase } = require("../lib/supabase");
 
-module.exports = withCors(async (req, res) => {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -34,7 +35,7 @@ module.exports = withCors(async (req, res) => {
     return res.status(edgeRes.status).json(data);
 
   } catch (err) {
-    console.error("trim-video proxy error", err);
+    console.error("trim-video error", err);
     return res.status(500).json({ error: err.message });
   }
-});
+};

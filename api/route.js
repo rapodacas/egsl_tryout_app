@@ -25,12 +25,16 @@ const promptsRollbackHandler = require("../backend/handlers/prompts-rollback");
 // Route dispatcher
 async function router(req, res) {
   // Vercel strips /api prefix, so req.url is like '/prompts?category=hitting'
-  // We need to extract the route name from the path
+  console.log("DEBUG: req.url =", req.url);
+  console.log("DEBUG: req.method =", req.method);
+  
   const path = req.url.split("?")[0]; // remove query string
   const parts = path.split("/").filter(p => p); // split by / and remove empty strings
 
   // Join remaining parts (e.g., ['prompts', 'create-version'] → 'prompts/create-version')
   const routeName = parts.join("/").replace(/\/$/, "");
+  
+  console.log("DEBUG: routeName =", routeName);
 
   // Dispatch by route
   switch (routeName) {
@@ -67,6 +71,7 @@ async function router(req, res) {
     case "prompts/rollback":
       return promptsRollbackHandler(req, res);
     default:
+      console.log("DEBUG: route not found, returning 404");
       return res.status(404).json({ error: `Route /${routeName} not found` });
   }
 }

@@ -1,7 +1,7 @@
 // api/[...route].js
 // Unified router for all endpoints — dispatches by path and method
 // Replaces individual .js files; runs as ONE Vercel function
-import { withCors } from "../_api/_cors.js";
+import { withCors } from "./_cors.js";
 
 import uploadHandler from "../handlers/upload.js";
 import trimVideoHandler from "../handlers/trim-video.js";

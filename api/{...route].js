@@ -1,26 +1,26 @@
-// backend/api/route.js
+// api/[...route].js
 // Unified router for all endpoints — dispatches by path and method
 // Replaces individual .js files; runs as ONE Vercel function
 
-const { withCors } = require("./_cors");
+const { withCors } = require("../backend/api/_cors");
 
 // Import all handlers
-const uploadHandler = require("../handlers/upload");
-const trimVideoHandler = require("../handlers/trim-video");
-const evaluateMediaHandler = require("../handlers/evaluate-media");
-const createPlayerHandler = require("../handlers/create-player");
-const loadPlayersHandler = require("../handlers/load-players");
-const savePlayersHandler = require("../handlers/save-players");
-const listTeamsHandler = require("../handlers/list-teams");
-const createTeamsHandler = require("../handlers/create-teams");
-const deleteMediaHandler = require("../handlers/delete-media");
-const createFolderHandler = require("../handlers/createFolder");
-const purgeAllHandler = require("../handlers/purge-all");
-const testEvaluatePromptHandler = require("../handlers/test-evaluate-prompt");
-const promptsHandler = require("../handlers/prompts");
-const promptsCreateVersionHandler = require("../handlers/prompts-create-version");
-const promptsActivateVersionHandler = require("../handlers/prompts-activate-version");
-const promptsRollbackHandler = require("../handlers/prompts-rollback");
+const uploadHandler = require("../backend/handlers/upload");
+const trimVideoHandler = require("../backend/handlers/trim-video");
+const evaluateMediaHandler = require("../backend/handlers/evaluate-media");
+const createPlayerHandler = require("../backend/handlers/create-player");
+const loadPlayersHandler = require("../backend/handlers/load-players");
+const savePlayersHandler = require("../backend/handlers/save-players");
+const listTeamsHandler = require("../backend/handlers/list-teams");
+const createTeamsHandler = require("../backend/handlers/create-teams");
+const deleteMediaHandler = require("../backend/handlers/delete-media");
+const createFolderHandler = require("../backend/handlers/createFolder");
+const purgeAllHandler = require("../backend/handlers/purge-all");
+const testEvaluatePromptHandler = require("../backend/handlers/test-evaluate-prompt");
+const promptsHandler = require("../backend/handlers/prompts");
+const promptsCreateVersionHandler = require("../backend/handlers/prompts-create-version");
+const promptsActivateVersionHandler = require("../backend/handlers/prompts-activate-version");
+const promptsRollbackHandler = require("../backend/handlers/prompts-rollback");
 
 // Route dispatcher
 async function router(req, res) {

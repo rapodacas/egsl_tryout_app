@@ -7,7 +7,7 @@ const promptCache = new Map(); // key: category, value: { subcategories, systemP
  * Load the active prompt for a category.
  * Uses in-memory cache for speed, but always source of truth is Supabase.
  */
-export default async function loadPrompt(category) {
+export async function loadPrompt(category) {
   if (!category) {
     throw new Error("Category is required to load prompt");
   }

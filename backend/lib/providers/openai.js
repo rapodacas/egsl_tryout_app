@@ -3,7 +3,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-async function callOpenAIModel({ frames, systemPrompt, userPrompt }) {
+export default async function callOpenAIModel({ frames, systemPrompt, userPrompt }) {
   const response = await openai.chat.completions.create({
     model: "o3-mini",
     messages: [
@@ -16,5 +16,3 @@ async function callOpenAIModel({ frames, systemPrompt, userPrompt }) {
 
   return JSON.parse(response.choices[0].message.content);
 }
-
-module.exports = { callOpenAIModel };

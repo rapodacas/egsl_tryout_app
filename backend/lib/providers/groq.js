@@ -3,7 +3,7 @@ import Groq from "groq-sdk";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-async function callGroqModel({ frames, systemPrompt, userPrompt }) {
+export default async function callGroqModel({ frames, systemPrompt, userPrompt }) {
   const response = await groq.chat.completions.create({
     model: "llama-3.1-70b-versatile",
     messages: [
@@ -15,5 +15,3 @@ async function callGroqModel({ frames, systemPrompt, userPrompt }) {
 
   return JSON.parse(response.choices[0].message.content);
 }
-
-module.exports = { callGroqModel };

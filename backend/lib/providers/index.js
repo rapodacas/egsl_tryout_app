@@ -1,14 +1,14 @@
 // backend/lib/providers/index.js
-import { callGroqModel }  from "./groq.js";
-import { callOpenAIModel } from "./openai.js";
-import { callGeminiStub } from "./gemini.js";
+import callGroqModel from "./groq.js";
+import callOpenAIModel from "./openai.js";
+import callGeminiStub from "./gemini.js";
 
-function chooseModelForEvent(event, userTier) {
+export function chooseModelForEvent(event, userTier) {
   if (userTier === "pro") return "openai";
   return "groq";
 }
 
-async function callModel(provider, frames) {
+export async function callModel(provider, frames) {
   switch (provider) {
     case "groq":
       return await callGroqModel(frames);
@@ -20,5 +20,3 @@ async function callModel(provider, frames) {
       throw new Error(`Unknown provider: ${provider}`);
   }
 }
-
-module.exports = { chooseModelForEvent, callModel };

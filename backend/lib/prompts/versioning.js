@@ -1,11 +1,11 @@
 // backend/lib/prompts/versioning.js
 import supabase from "../supabase.js";
-import invalidatePromptCache from "./runtime.js";
+import { invalidatePromptCache } from "./runtime.js";
 
 /**
  * Create a new prompt version for a category.
  */
-export default async function createPromptVersion({
+export async function createPromptVersion({
   category,
   subcategories,
   systemPrompt,

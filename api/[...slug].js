@@ -3,4 +3,6 @@
 // This allows the existing unified router (backend/api/route.js) to be reachable
 // at /api/* on Vercel without moving files.
 
-module.exports = require("../backend/api/route.js");
+const router = require("../backend/api/route.js");
+
+module.exports = router;

@@ -47,14 +47,14 @@ export default async function loadPrompt(category) {
 /**
  * Clear cache for a specific category (e.g., after updating prompts).
  */
-export default function invalidatePromptCache(category) {
+export function invalidatePromptCache(category) {
   if (category) promptCache.delete(category);
 }
 
 /**
  * Clear all prompt cache (e.g., on deploy or admin action).
  */
-export default function clearPromptCache() {
+export function clearPromptCache() {
   promptCache.clear();
 }
 

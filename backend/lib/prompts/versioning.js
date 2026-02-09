@@ -43,7 +43,7 @@ export default async function createPromptVersion({
 /**
  * Activate a specific version for a category.
  */
-export default async function activatePromptVersion(category, version) {
+export async function activatePromptVersion(category, version) {
   // 1. Deactivate all versions
   const { error: deactivateErr } = await supabase
     .from("prompts")
@@ -70,7 +70,7 @@ export default async function activatePromptVersion(category, version) {
 /**
  * Roll back to the previous version.
  */
-export default async function rollbackPrompt(category) {
+export async function rollbackPrompt(category) {
   // 1. Fetch all versions sorted newest → oldest
   const { data, error } = await supabase
     .from("prompts")

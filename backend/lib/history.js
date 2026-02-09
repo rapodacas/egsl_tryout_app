@@ -17,7 +17,7 @@ export default async function saveEvaluationHistory(entry) {
   if (error) throw new Error("Failed to save evaluation history");
 }
 
-export default async function loadEvaluationHistory(playerId, category = null) {
+export async function loadEvaluationHistory(playerId, category = null) {
   let query = supabase
     .from("player_evaluation_history")
     .select("*")

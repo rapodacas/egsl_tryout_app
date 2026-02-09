@@ -1,5 +1,5 @@
 // backend/handlers/createFolder.js
-import { google } from "googleapis.js";
+import { google } from "googleapis";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

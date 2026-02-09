@@ -1,7 +1,7 @@
 // backend/lib/providers/index.js
-const { callGroqModel } = require("./groq.js");
-const { callOpenAIModel } = require("./openai.js");
-const { callGeminiStub } = require("./gemini.js");
+import { callGroqModel }  from "./groq.js";
+import { callOpenAIModel } from "./openai.js";
+import { callGeminiStub } from "./gemini.js";
 
 function chooseModelForEvent(event, userTier) {
   if (userTier === "pro") return "openai";

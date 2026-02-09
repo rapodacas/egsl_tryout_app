@@ -27,8 +27,8 @@ async function router(req, res) {
   const path = req.url.split("?")[0]; // remove query string
   const parts = path.split("/").filter(p => p); // ['api', 'upload'] → ['api', 'upload']
 
-  // Normalize: remove trailing slash
-  const routeName = parts.slice(1).join("/").replace(/\/$/, "");
+  // Vercel strips /api, so parts = ["prompts", "create-version"]
+  const routeName = parts.join("/").replace(/\/$/, "");
 
   // Dispatch by route
   switch (routeName) {

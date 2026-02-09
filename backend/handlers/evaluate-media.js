@@ -1,5 +1,5 @@
 // backend/handlers/evaluate-media.js
-import { supabase } from "../lib/supabase.js";
+import supabase from "../lib/supabase.js";
 import { evaluateSingleEvent } from "../lib/evaluation.js";
 
 export default async function handler(req, res) {

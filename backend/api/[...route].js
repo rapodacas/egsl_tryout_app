@@ -12,7 +12,7 @@ import savePlayersHandler from "../handlers/save-players.js";
 import listTeamsHandler from "../handlers/list-teams.js";
 import createTeamsHandler from "../handlers/create-teams.js";
 import deleteMediaHandler from "../handlers/delete-media.js";
-import createFolderHandler from "../handlers/createFolder.js";
+//import createFolderHandler from "../handlers/createFolder.js";
 import purgeAllHandler from "../handlers/purge-all.js";
 import testEvaluatePromptHandler from "../handlers/test-evaluate-prompt.js";
 import promptsHandler from "../handlers/prompts.js";
@@ -44,8 +44,8 @@ async function router(req, res) {
       return createTeamsHandler(req, res);
     case "delete-media":
       return deleteMediaHandler(req, res);
-    case "createFolder":
-      return createFolderHandler(req, res);
+    // case "createFolder":
+    //   return createFolderHandler(req, res);
     case "purge-all":
       return purgeAllHandler(req, res);
     case "test-evaluate-prompt":

@@ -1,5 +1,5 @@
 // backend/lib/prompts/runtime.js
-import { supabase } from "../supabase.js";
+import supabase from "../supabase.js";
 
 const promptCache = new Map(); // key: category, value: { subcategories, systemPrompt, userPromptTemplate, version }
 

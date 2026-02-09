@@ -1,19 +1,21 @@
 // backend/api/prompts.js
 import { createPromptVersion } from "../lib/prompts/versioning.js";
 import supabase from "../lib/supabase.js";
+import { URL } from "url";
 
 export default async function handler(req, res) {
   const { method } = req;
 
+  // Parse query params manually
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const category = url.searchParams.get("category");
+
   // GET /api/prompts?category=hitting
   if (method === "GET") {
-    const { category } = req.query;
-
     if (!category) {
       return res.status(400).json({ error: "Missing category parameter" });
     }
 
-    // Fetch the active version for this category
     const { data, error } = await supabase
       .from("prompts")
       .select("*")
@@ -35,9 +37,12 @@ export default async function handler(req, res) {
 
   // POST /api/prompts
   if (method === "POST") {
-    const body = req.body || (await req.json?.());
+    // Parse body manually
+    let raw = "";
+    for await (const chunk of req) raw += chunk;
+    const body = JSON.parse(raw || "{}");
 
-    if (!body?.category) {
+    if (!body.category) {
       return res.status(400).json({ error: "Missing category in request body" });
     }
 

@@ -2,7 +2,7 @@
 // Unified router for all endpoints — dispatches by path and method
 // Replaces individual .js files; runs as ONE Vercel function
 
-const { withCors } = require("../backend/api/_cors");
+const { withCors } = require("../backend/_api/_cors");
 
 // Import all handlers
 const uploadHandler = require("../backend/handlers/upload");

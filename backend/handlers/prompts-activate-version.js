@@ -1,5 +1,5 @@
 // backend/handlers/prompts-activate-version.js
-import { activatePromptVersion } from "../lib/prompts/versioning";
+import { activatePromptVersion } from "../lib/prompts/versioning.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

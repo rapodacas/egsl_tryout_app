@@ -1,7 +1,7 @@
 // backend/lib/history.js
 const { supabase } = require("../supabase.js");
 
-async function saveEvaluationHistory(entry) {
+export default async function saveEvaluationHistory(entry) {
   const { error } = await supabase
     .from("player_evaluation_history")
     .insert({
@@ -17,7 +17,7 @@ async function saveEvaluationHistory(entry) {
   if (error) throw new Error("Failed to save evaluation history");
 }
 
-async function loadEvaluationHistory(playerId, category = null) {
+export default async function loadEvaluationHistory(playerId, category = null) {
   let query = supabase
     .from("player_evaluation_history")
     .select("*")
@@ -31,5 +31,3 @@ async function loadEvaluationHistory(playerId, category = null) {
   if (error) throw new Error("Failed to load evaluation history");
   return data;
 }
-
-module.exports = { saveEvaluationHistory, loadEvaluationHistory };

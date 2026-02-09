@@ -1,6 +1,6 @@
 // backend/handlers/evaluate-media.js
-import { supabase } from "../lib/supabase";
-import { evaluateSingleEvent } from "../lib/evaluation";
+import { supabase } from "../lib/supabase.js";
+import { evaluateSingleEvent } from "../lib/evaluation.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

@@ -1,5 +1,5 @@
 // backend/handlers/purge-all.js
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

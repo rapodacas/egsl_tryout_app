@@ -3,7 +3,7 @@ const { extractFramesFromUrl } = require("./ffmpeg.js");
 const { chooseModelForEvent, callModel } = require("./providers/index.js");
 const { loadPrompt } = require("./prompts/runtime.js");
 
-async function evaluateSingleEvent(evt, category, playerId, sessionId, userTier) {
+export default async function evaluateSingleEvent(evt, category, playerId, sessionId, userTier) {
   if (!evt || !evt.url || typeof evt.eventIndex !== "number") {
     return {
       playerId,
@@ -45,5 +45,3 @@ async function evaluateSingleEvent(evt, category, playerId, sessionId, userTier)
     };
   }
 }
-
-module.exports = { evaluateSingleEvent };

@@ -12,7 +12,7 @@ async function ensureFFmpegLoaded() {
   }
 }
 
-async function extractFramesFromUrl(videoUrl, frameCount = 6) {
+export default async function extractFramesFromUrl(videoUrl, frameCount = 6) {
   await ensureFFmpegLoaded();
 
   const resp = await fetch(videoUrl);
@@ -49,5 +49,3 @@ async function extractFramesFromUrl(videoUrl, frameCount = 6) {
   ffmpeg.FS("unlink", "input.mp4");
   return frames;
 }
-
-module.exports = { extractFramesFromUrl };

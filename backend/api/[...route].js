@@ -23,6 +23,12 @@ import promptsRollbackHandler from "../handlers/prompts-rollback.js";
 async function router(req, res) {
   const path = req.url.split("?")[0];
   const parts = path.split("/").filter(Boolean);
+
+  // FIX: remove "api" prefix so /api/prompts → "prompts"
+  if (parts[0] === "api") {
+    parts.shift();
+  }
+
   const routeName = parts.join("/");
 
   switch (routeName) {
@@ -44,8 +50,6 @@ async function router(req, res) {
       return createTeamsHandler(req, res);
     case "delete-media":
       return deleteMediaHandler(req, res);
-    // case "createFolder":
-    //   return createFolderHandler(req, res);
     case "purge-all":
       return purgeAllHandler(req, res);
     case "test-evaluate-prompt":

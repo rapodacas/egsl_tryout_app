@@ -1,9 +1,9 @@
 // backend/handlers/test-evaluate-prompt.js
-const { supabase } = require("../lib/supabase");
-const { callModel } = require("../lib/providers/index");
-const { extractFramesFromUrl } = require("../lib/ffmpeg");
+import { supabase } from "../lib/supabase";
+import { callModel } from "../lib/providers/index";
+import { extractFramesFromUrl } from "../lib/ffmpeg";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }

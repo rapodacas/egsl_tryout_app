@@ -1,11 +1,11 @@
 // backend/lib/prompts/versioning.js
-const { supabase } = require("../supabase.js");
-const { invalidatePromptCache } = require("./runtime.js");
+import { supabase } from "../supabase.js";
+import  { invalidatePromptCache } from "./runtime.js";
 
 /**
  * Create a new prompt version for a category.
  */
-async function createPromptVersion({
+export default async function createPromptVersion({
   category,
   subcategories,
   systemPrompt,
@@ -43,7 +43,7 @@ async function createPromptVersion({
 /**
  * Activate a specific version for a category.
  */
-async function activatePromptVersion(category, version) {
+export default async function activatePromptVersion(category, version) {
   // 1. Deactivate all versions
   const { error: deactivateErr } = await supabase
     .from("prompts")
@@ -70,7 +70,7 @@ async function activatePromptVersion(category, version) {
 /**
  * Roll back to the previous version.
  */
-async function rollbackPrompt(category) {
+export default async function rollbackPrompt(category) {
   // 1. Fetch all versions sorted newest → oldest
   const { data, error } = await supabase
     .from("prompts")
@@ -93,5 +93,3 @@ async function rollbackPrompt(category) {
 
   return previousVersion;
 }
-
-module.exports = { createPromptVersion, activatePromptVersion, rollbackPrompt };

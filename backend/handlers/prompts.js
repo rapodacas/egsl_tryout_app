@@ -1,7 +1,7 @@
 // backend/handlers/prompts.js
-const { supabase } = require("../lib/supabase");
+import { supabase } from "../lib/supabase";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   const category = req.query.category;
 
   if (!category) {

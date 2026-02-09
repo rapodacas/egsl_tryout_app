@@ -1,7 +1,7 @@
 // backend/handlers/prompts-rollback.js
-const { rollbackPrompt } = require("../lib/prompts/versioning");
+import { rollbackPrompt } from "../lib/prompts/versioning";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }

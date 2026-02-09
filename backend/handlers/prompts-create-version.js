@@ -1,7 +1,7 @@
 // backend/handlers/prompts-create-version.js
-const { createPromptVersion } = require("../lib/prompts/versioning");
+import { createPromptVersion } from "../lib/prompts/versioning";
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }

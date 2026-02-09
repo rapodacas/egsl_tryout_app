@@ -1,36 +1,30 @@
 // api/[...route].js
 // Unified router for all endpoints — dispatches by path and method
 // Replaces individual .js files; runs as ONE Vercel function
+import { withCors } from "../_api/_cors.js";
 
-const { withCors } = require("./_cors");
+import uploadHandler from "../handlers/upload.js";
+import trimVideoHandler from "../handlers/trim-video.js";
+import evaluateMediaHandler from "../handlers/evaluate-media.js";
+import createPlayerHandler from "../handlers/create-player.js";
+import loadPlayersHandler from "../handlers/load-players.js";
+import savePlayersHandler from "../handlers/save-players.js";
+import listTeamsHandler from "../handlers/list-teams.js";
+import createTeamsHandler from "../handlers/create-teams.js";
+import deleteMediaHandler from "../handlers/delete-media.js";
+import createFolderHandler from "../handlers/createFolder.js";
+import purgeAllHandler from "../handlers/purge-all.js";
+import testEvaluatePromptHandler from "../handlers/test-evaluate-prompt.js";
+import promptsHandler from "../handlers/prompts.js";
+import promptsCreateVersionHandler from "../handlers/prompts-create-version.js";
+import promptsActivateVersionHandler from "../handlers/prompts-activate-version.js";
+import promptsRollbackHandler from "../handlers/prompts-rollback.js";
 
-// Import all handlers
-const uploadHandler = require("../handlers/upload");
-const trimVideoHandler = require("../handlers/trim-video");
-const evaluateMediaHandler = require("../handlers/evaluate-media");
-const createPlayerHandler = require("../handlers/create-player");
-const loadPlayersHandler = require("../handlers/load-players");
-const savePlayersHandler = require("../handlers/save-players");
-const listTeamsHandler = require("../handlers/list-teams");
-const createTeamsHandler = require("../handlers/create-teams");
-const deleteMediaHandler = require("../handlers/delete-media");
-const createFolderHandler = require("../handlers/createFolder");
-const purgeAllHandler = require("../handlers/purge-all");
-const testEvaluatePromptHandler = require("../handlers/test-evaluate-prompt");
-const promptsHandler = require("../handlers/prompts");
-const promptsCreateVersionHandler = require("../handlers/prompts-create-version");
-const promptsActivateVersionHandler = require("../handlers/prompts-activate-version");
-const promptsRollbackHandler = require("../handlers/prompts-rollback");
-
-// Route dispatcher
 async function router(req, res) {
-  const path = req.url.split("?")[0]; // remove query string
-  const parts = path.split("/").filter(p => p); // ['api', 'upload'] → ['api', 'upload']
+  const path = req.url.split("?")[0];
+  const parts = path.split("/").filter(Boolean);
+  const routeName = parts.join("/");
 
-  // Vercel strips /api, so parts = ["prompts", "create-version"]
-  const routeName = parts.join("/").replace(/\/$/, "");
-
-  // Dispatch by route
   switch (routeName) {
     case "upload":
       return uploadHandler(req, res);
@@ -65,9 +59,10 @@ async function router(req, res) {
     case "prompts/rollback":
       return promptsRollbackHandler(req, res);
     default:
-      return res.status(404).json({ error: `Route /${routeName} not found` });
+      res.statusCode = 404;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: `Route /${routeName} not found` }));
   }
 }
 
-// Export wrapped with CORS
-module.exports = withCors(router);
+export default withCors(router);

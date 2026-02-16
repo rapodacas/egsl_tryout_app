@@ -56,12 +56,12 @@ async function router(req, res) {
       return testEvaluatePromptHandler(req, res);
     case "prompts":
       return promptsHandler(req, res);
-    case "prompts/create-version":
-      return promptsCreateVersionHandler(req, res);
-    case "prompts/activate-version":
-      return promptsActivateVersionHandler(req, res);
-    case "prompts/rollback":
-      return promptsRollbackHandler(req, res);
+    // case "prompts/create-version":
+    //   return promptsCreateVersionHandler(req, res);
+    // case "prompts/activate-version":
+    //   return promptsActivateVersionHandler(req, res);
+    // case "prompts/rollback":
+    //   return promptsRollbackHandler(req, res);
     default:
       res.statusCode = 404;
       res.setHeader("Content-Type", "application/json");

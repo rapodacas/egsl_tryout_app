@@ -2,8 +2,9 @@
 import { createPromptVersion } from "../lib/prompts/versioning.js";
 import supabase from "../lib/supabase.js";
 import { URL } from "url";
+import { withCors } from "./_cors.js";
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { method } = req;
 
   // Parse query params manually
@@ -56,3 +57,5 @@ export default async function handler(req, res) {
 
   return res.status(405).json({ error: "Method not allowed" });
 }
+
+export default withCors(handler);

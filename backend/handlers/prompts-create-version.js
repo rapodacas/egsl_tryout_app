@@ -1,8 +1,7 @@
 // backend/handlers/prompts-create-version.js
-import { withCors } from "../api/_cors.js";
 import { createPromptVersion } from "../lib/prompts/versioning.js";
 
-async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -33,5 +32,3 @@ async function handler(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
-
-export default withCors(handler);

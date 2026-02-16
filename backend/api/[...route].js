@@ -3,21 +3,21 @@
 // Runs as ONE Vercel function
 import { withCors } from "./_cors.js";
 
-import uploadHandler from "../src/handlers/upload.js";
-import trimVideoHandler from "../src/handlers/trim-video.js";
-import evaluateMediaHandler from "../src/handlers/evaluate-media.js";
-import createPlayerHandler from "../src/handlers/create-player.js";
-import loadPlayersHandler from "../src/handlers/load-players.js";
-import savePlayersHandler from "../src/handlers/save-players.js";
-import listTeamsHandler from "../src/handlers/list-teams.js";
-import createTeamsHandler from "../src/handlers/create-teams.js";
-import deleteMediaHandler from "../src/handlers/delete-media.js";
-import purgeAllHandler from "../src/handlers/purge-all.js";
-import testEvaluatePromptHandler from "../src/handlers/test-evaluate-prompt.js";
-import promptsHandler from "../src/handlers/prompts.js";
-import promptsCreateVersionHandler from "../src/handlers/prompts-create-version.js";
-import promptsActivateVersionHandler from "../src/handlers/prompts-activate-version.js";
-import promptsRollbackHandler from "../src/handlers/prompts-rollback.js";
+import uploadHandler from "../server/handlers/upload.js";
+import trimVideoHandler from "../server/handlers/trim-video.js";
+import evaluateMediaHandler from "../server/handlers/evaluate-media.js";
+import createPlayerHandler from "../server/handlers/create-player.js";
+import loadPlayersHandler from "../server/handlers/load-players.js";
+import savePlayersHandler from "../server/handlers/save-players.js";
+import listTeamsHandler from "../server/handlers/list-teams.js";
+import createTeamsHandler from "../server/handlers/create-teams.js";
+import deleteMediaHandler from "../server/handlers/delete-media.js";
+import purgeAllHandler from "../server/handlers/purge-all.js";
+import testEvaluatePromptHandler from "../server/handlers/test-evaluate-prompt.js";
+import promptsHandler from "../server/handlers/prompts.js";
+import promptsCreateVersionHandler from "../server/handlers/prompts-create-version.js";
+import promptsActivateVersionHandler from "../server/handlers/prompts-activate-version.js";
+import promptsRollbackHandler from "../server/handlers/prompts-rollback.js";
 
 async function router(req, res) {
   console.log("🔥 Incoming request:", {

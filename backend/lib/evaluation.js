@@ -22,7 +22,7 @@ export default async function evaluateSingleEvent(evt, category, playerId, sessi
     const response = await callModel(provider, {
       frames,
       systemPrompt,
-      userPrompt: userPrompt(frames)
+      userPrompt: userPrompt(frames, subcategories)
     });
 
     return {

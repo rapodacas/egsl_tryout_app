@@ -67,8 +67,10 @@ function buildPromptObject(entry) {
     subcategories,
     systemPrompt,
     version,
-    userPrompt: frames =>
-      userPromptTemplate.replace("{{frames}}", JSON.stringify(frames))
+    userPrompt: (frames, subcategories) =>
+      userPromptTemplate
+        .replace("{{frames}}", JSON.stringify(frames))
+        .replace("{{subcategories}}", JSON.stringify(subcategories))
   };
 }
 

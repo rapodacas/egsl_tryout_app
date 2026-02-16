@@ -2,6 +2,8 @@
 
 export function withCors(handler) {
   return async (req, res) => {
+    console.log("🛡️ CORS wrapper invoked:", req.method, req.url);
+
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader(
@@ -23,6 +25,8 @@ export function withCors(handler) {
     req.query = Object.fromEntries(url.searchParams.entries());
 
     if (req.method === "OPTIONS") {
+      console.log("🟦 Handling OPTIONS preflight");
+
       res.statusCode = 200;
       return res.end();
     }

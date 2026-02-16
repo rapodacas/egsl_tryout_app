@@ -1,6 +1,6 @@
-// api/[...route].js
+// backend/api/[...route].js
 // Unified router for all endpoints — dispatches by path and method
-// Replaces individual .js files; runs as ONE Vercel function
+// Runs as ONE Vercel function
 import { withCors } from "./_cors.js";
 
 import uploadHandler from "../handlers/upload.js";
@@ -12,7 +12,6 @@ import savePlayersHandler from "../handlers/save-players.js";
 import listTeamsHandler from "../handlers/list-teams.js";
 import createTeamsHandler from "../handlers/create-teams.js";
 import deleteMediaHandler from "../handlers/delete-media.js";
-//import createFolderHandler from "../handlers/createFolder.js";
 import purgeAllHandler from "../handlers/purge-all.js";
 import testEvaluatePromptHandler from "../handlers/test-evaluate-prompt.js";
 import promptsHandler from "../handlers/prompts.js";
@@ -21,15 +20,22 @@ import promptsActivateVersionHandler from "../handlers/prompts-activate-version.
 import promptsRollbackHandler from "../handlers/prompts-rollback.js";
 
 async function router(req, res) {
+  console.log("🔥 Incoming request:", {
+    method: req.method,
+    url: req.url,
+    headers: req.headers
+  });
+
   const path = req.url.split("?")[0];
   const parts = path.split("/").filter(Boolean);
 
-  // FIX: remove "api" prefix so /api/prompts → "prompts"
+  // Normalize: remove "api" prefix
   if (parts[0] === "api") {
     parts.shift();
   }
 
   const routeName = parts.join("/");
+  console.log("📌 Parsed routeName:", routeName);
 
   switch (routeName) {
     case "upload":
@@ -57,6 +63,7 @@ async function router(req, res) {
     case "prompts":
       return promptsHandler(req, res);
     case "prompts/create-version":
+      console.log("🚀 Hit prompts/create-version handler");
       return promptsCreateVersionHandler(req, res);
     case "prompts/activate-version":
       return promptsActivateVersionHandler(req, res);

@@ -5,8 +5,11 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-
-  const { category, version } = req.body || {};
+  
+  // Parse query params manually
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const category = url.searchParams.get("category");
+  const version = url.searchParams.get("version");
 
   if (!category || version == null) {
     return res.status(400).json({ error: "Missing category or version" });

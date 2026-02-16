@@ -1,8 +1,12 @@
 // backend/handlers/prompts.js
-import supabase from "../lib/supabase.js";
+import supabase from "../../lib/supabase.js";
 
 export default async function handler(req, res) {
   const category = req.query.category;
+
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   if (!category) {
     return res.status(400).json({ error: "Missing category" });

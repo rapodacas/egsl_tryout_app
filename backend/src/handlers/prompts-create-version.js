@@ -1,5 +1,5 @@
 // backend/handlers/prompts-create-version.js
-import { createPromptVersion } from "../lib/prompts/versioning.js";
+import { createPromptVersion } from "../../lib/prompts/versioning.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

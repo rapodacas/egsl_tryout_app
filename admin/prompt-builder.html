@@ -340,7 +340,7 @@
       els.testVersionSelect.innerHTML = "";
 
       try {
-        const res = await fetch(`${API_BASE}/prompts/list-versions/?category=${encodeURIComponent(state.selectedCategory)}`);
+        const res = await fetch(`${API_BASE}/prompts/list-versions?category=${encodeURIComponent(state.selectedCategory)}`);
         if (!res.ok) throw new Error("Failed to load prompts");
         const data = await res.json();
 

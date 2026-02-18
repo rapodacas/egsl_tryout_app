@@ -340,12 +340,12 @@
       els.testVersionSelect.innerHTML = "";
 
       try {
-        const res = await fetch(`${API_BASE}/prompts?category=${encodeURIComponent(state.selectedCategory)}`);
+        const res = await fetch(`${API_BASE}/prompts/list-versions/?category=${encodeURIComponent(state.selectedCategory)}`);
         if (!res.ok) throw new Error("Failed to load prompts");
         const data = await res.json();
 
-        state.versions = data.versions || [];
-        state.activeVersion = data.activeVersion || null;
+        state.versions = Array.isArray(data) ? data : [];
+        state.activeVersion = state.versions.find(v => v.active)?.version || null;
 
         // Default editing version: active or latest
         const editing = state.versions.find(v => v.version === state.activeVersion) ||

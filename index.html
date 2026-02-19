@@ -2552,11 +2552,12 @@
       const input = document.getElementById("nativeVideoInput");
       input.dataset.category = category;
       input.value = "";
-
-      // IMPORTANT: click BEFORE hiding modal
       input.click();
 
-      modal.classList.add("hidden");
+      // Delay hiding modal so iOS keeps the gesture context
+      setTimeout(() => {
+        modal.classList.add("hidden");
+      }, 50);
     };
 
     // --- ADD NOTE ---

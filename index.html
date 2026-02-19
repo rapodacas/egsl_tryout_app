@@ -640,6 +640,7 @@
 
 </head>
 <body>
+<input id="nativeVideoInput" type="file" accept="video/*" capture="camera" class="invisible-file-input">
 
 <!-- TEAM SELECTION SCREEN -->
 <div id="teamSelectScreen">
@@ -737,7 +738,7 @@
         <div class="profile-pic-wrapper" id="profilePicWrapper">
           <img id="profilePic" src="" alt="">
         </div>
-        <input type="file" id="photoInput" accept="video/*" capture="camera">
+        <input type="file" id="photoInput" accept="image/*" capture="camera">
 
         <!-- Name + Throws -->
         <div>
@@ -832,8 +833,6 @@
     </div>
   </div>
 </div>
-
-<input id="nativeVideoInput" type="file" accept="video/*" capture="camera" class="invisible-file-input">
 
 <!-- 1. CONFIG & GLOBALS -->
 <script data-chunk="config-and-globals">

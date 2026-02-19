@@ -930,7 +930,7 @@
     localStorage.setItem("team_" + currentTeamId, JSON.stringify(players));
 
     // Send to backend
-    const res = await fetch(`${API_BASE}/save-players`, {
+    const res = await fetch(`${API_BASE}/players/save`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ players, teamId })

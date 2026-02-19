@@ -626,6 +626,16 @@
     background: white;
     transition: width 0.1s linear;
   }
+
+  .invisible-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -804,7 +814,6 @@
   <div class="modal-content" id="attachmentModalContent"></div>
 </div>
 
-<input id="fileInput" type="file" accept="video/*" capture="camera" style="display:none">
 
 <div id="attachmentViewerModal" class="modal hidden attachment-viewer-modal">
   <div class="attachment-viewer-content" id="attachmentViewerContent"></div>
@@ -825,7 +834,7 @@
   </div>
 </div>
 
-<input id="nativeVideoInput" type="file" accept="video/*" capture="camera" class="hidden">
+<input id="nativeVideoInput" type="file" accept="video/*" capture="camera" class="invisible-file-input">
 
 <!-- 1. CONFIG & GLOBALS -->
 <script data-chunk="config-and-globals">
@@ -1892,8 +1901,6 @@
 
 <!-- 6. MEDIA, ATTACHMENTS, PURGE -->
 <script data-chunk="media-and-attachments">
-  document.getElementById("fileInput").addEventListener("change", handleFileSelected);
-
   async function handleFileSelected(e) {
     const overlay = document.getElementById("uploadOverlay");
 
@@ -2589,12 +2596,12 @@
     };
 
     document.getElementById("addPhotoVideoBtn").onclick = () => {
-      modal.classList.add("hidden");
-
       const input = document.getElementById("nativeVideoInput");
       input.dataset.category = category;   // persist category
       input.value = "";                    // reset so same file can be selected twice
       input.click();
+
+      modal.classList.add("hidden");
     };
 
     document.getElementById("nativeVideoInput").onchange = e => {

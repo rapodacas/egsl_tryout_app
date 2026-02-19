@@ -2524,54 +2524,6 @@
       else openAttachmentViewer(category, progressState[category].index, attachments);
     };
   }
-  // function renderAttachments(category, record) {
-  //   if (!record.media) record.media = { attachments: [] };
-  //   if (!record.media.attachments) record.media.attachments = [];
-
-  //   const container = document.getElementById(`${category}Attachments`);
-  //   container.innerHTML = "";
-
-  //   const isEditable = progressState[category].index === 0;
-  //   const attachments = record.media.attachments;
-  //   const count = attachments.length;
-
-  //   const icon = document.createElement("img");
-  //   icon.src = "icons/paperclip.svg";
-  //   icon.className = "attachments-icon";
-
-  //   const countEl = document.createElement("span");
-  //   countEl.className = "attachments-count";
-
-  //   if (count > 0) {
-  //     countEl.textContent = count;
-  //   } else if (isEditable) {
-  //     countEl.textContent = "+";
-  //   } else {
-  //     container.classList.add("disabled");
-  //   }
-
-  //   let badgeClass = "gemini-none";
-
-  //   if (count > 0) {
-  //     const evaluated = attachments.filter(a => a.gemini).length;
-
-  //     if (evaluated === 0) badgeClass = "gemini-none";
-  //     else if (evaluated === count) badgeClass = "gemini-all";
-  //     else badgeClass = "gemini-some";
-  //   }
-
-  //   const badge = document.createElement("div");
-  //   badge.className = `gemini-session-badge ${badgeClass}`;
-
-  //   container.appendChild(icon);
-  //   container.appendChild(countEl);
-  //   container.appendChild(badge);
-
-  //   container.onclick = () => {
-  //     if (isEditable) openAttachmentPicker(category);
-  //     else openAttachmentViewer(category, progressState[category].index, attachments);
-  //   };
-  // }
 
   function openAttachmentPicker(category) {
     if (!progressState[category]) {
@@ -2580,6 +2532,7 @@
     const modal = document.getElementById("attachmentModal");
     const content = document.getElementById("attachmentModalContent");
 
+    // Inject modal HTML
     content.innerHTML = `
       <h3>Add Attachment</h3>
       <button id="batchGeminiBtn" class="gemini-batch-btn">Evaluate All</button>
@@ -2590,55 +2543,46 @@
 
     modal.classList.remove("hidden");
 
-    document.getElementById("closeModalBtn").onclick = () => {
-      modal.classList.add("hidden");
-    };
+    // --- CLOSE BUTTON ---
+    const closeBtn = document.getElementById("closeModalBtn");
+    closeBtn.onclick = () => modal.classList.add("hidden");
 
-    document.getElementById("addPhotoVideoBtn").onclick = () => {
+    // --- ADD PHOTO/VIDEO ---
+    const addPhotoVideoBtn = document.getElementById("addPhotoVideoBtn");
+    addPhotoVideoBtn.onclick = () => {
       const input = document.getElementById("nativeVideoInput");
-      input.dataset.category = category;   // persist category
-      input.value = "";                    // reset so same file can be selected twice
+      input.dataset.category = category;
+      input.value = "";
+
+      // IMPORTANT: click BEFORE hiding modal
       input.click();
 
       modal.classList.add("hidden");
     };
 
-    document.getElementById("nativeVideoInput").onchange = e => {
+    // --- ADD NOTE ---
+    const addNoteBtn = document.getElementById("addNoteBtn");
+    addNoteBtn.onclick = () => {
+      modal.classList.add("hidden");
+      openNoteCreator(category);
+    };
+
+    // --- BATCH GEMINI ---
+    const batchBtn = document.getElementById("batchGeminiBtn");
+    batchBtn.onclick = () => {
+      // your batch logic here
+    };
+
+    // --- NATIVE VIDEO INPUT CHANGE ---
+    // Attach once per open, safe
+    const nativeInput = document.getElementById("nativeVideoInput");
+    nativeInput.onchange = e => {
       const file = e.target.files[0];
       if (!file) return;
 
       const category = e.target.dataset.category;
       handleDirectFileUpload(file, category);
     };
-
-    document.getElementById("addNoteBtn").onclick = () => {
-      modal.classList.add("hidden");
-      openNoteCreator(category);
-    };
-
-    document.getElementById("evaluateBtn").onclick = async () => {
-      const btn = document.getElementById("evaluateBtn");
-      btn.textContent = "Evaluating…";
-
-      try {
-        const result = await evaluateSingleAttachment(attachment, {
-          playerId: players[current].id,
-          sessionId: record.sessionId,
-          category,
-          userTier: record.userTier
-        });
-
-        attachment.evaluation = normalizeEvaluation(result);
-        savePlayer(players[current]);
-        renderEvaluationPanel(attachment);
-
-        btn.textContent = "Evaluate Again";
-      } catch (err) {
-        alert("Evaluation failed.");
-        btn.textContent = "Evaluate";
-      }
-    };
-
   }
 
   function openNoteCreator(category) {
